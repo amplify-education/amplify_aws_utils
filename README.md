@@ -6,7 +6,6 @@ Utility functions for working with AWS resources
 ## Prerequisites
 amplify_aws_utils requires the following to be installed:
 ```
-python >= 2.7
 python >= 3.6
 ```
 
