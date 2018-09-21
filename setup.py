@@ -58,7 +58,7 @@ setup(
     keywords='',
     author='Amplify Education',
     author_email='astronauts.core@amplify.com',
-    url='https://github.com/amplifylitco/amplify_aws_utils',
+    url='https://github.com/amplify-education/amplify_aws_utils/',
     license='MIT',
     packages=find_packages(),
     include_package_data=True,
