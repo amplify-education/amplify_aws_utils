@@ -8,6 +8,8 @@ before_install:
   - sudo apt-get install pandoc
 install:
   - pip install tox-travis codacy-coverage pypandoc
+env:
+  - CODACY_PROJECT_TOKEN=3
 script:
   - bash bin/versionCheck.sh $TRAVIS_BRANCH $TRAVIS_PULL_REQUEST
   - tox
