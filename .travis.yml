@@ -1,9 +1,10 @@
 
 sudo: true
 language: python
-python: 3.6
+python: 2.7
 before_install:
   # need pandoc to convert markdown readme to reStructuredText that PyPi requires
+  - sudo rm -f /etc/boto.cfg
   - sudo apt-get install pandoc
 install:
   - pip install tox-travis codacy-coverage pypandoc

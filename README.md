@@ -6,7 +6,7 @@ Utility functions for working with AWS resources
 ## Prerequisites
 amplify_aws_utils requires the following to be installed:
 ```
-python >= 3.6
+python >= 2.7
 ```
 
 For development, `tox>=2.9.1` is recommended.
