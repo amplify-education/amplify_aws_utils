@@ -1,3 +1,9 @@
+[![Build Status](https://travis-ci.org/amplify-education/amplify_aws_utils.svg?branch=master)](https://travis-ci.org/amplify-education/amplify_aws_utils)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/amplify-education/amplify_aws_utils/master/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/nine.svg)](https://pypi.org/project/amplify-aws-utils/)
+[![Python Versions](https://img.shields.io/badge/Python-3.6-brightgreen.svg,https://img.shields.io/badge/Python-2.7-brightgreen.svg)](https://pypi.python.org/pypi/amplify_aws_utils)
+[![Downloads](https://img.shields.io/badge/dynamic/json.svg?label=downloads&url=https://img.shields.io/badge/dynamic/json.svg?label=Downloads&url=https%3A%2F%2Fpypistats.org%2Fapi%2Fpackages%2Famplify-aws-utils%2Frecent&query=data.last_month&colorB=brightgreen&suffix=%2FMonth)](https://pypistats.org/api/packages/amplify-aws-utils/recent)
+
 # amplify_aws_utils
 
 Utility functions for working with AWS resources though Boto3 with less hiccups.
@@ -12,7 +18,8 @@ Amplify builds innovative and compelling digital educational products that empow
 ## Prerequisites
 amplify_aws_utils requires the following to be installed:
 ```
-python >= 3.6
+python >= 2.7
+python >=3.6
 ```
 
 For development, `tox>=2.9.1` is recommended.
@@ -27,7 +34,7 @@ This creates a package in `dist` directory.
 ## Running Tests
 As mentioned above, amplify_aws_utils uses tox, so running `tox` will automatically execute linters as well as the unit tests. You can also run functional and integration tests by using the -e argument.
 
-For example, `tox -e lint,py36-unit,py36-integration` will run the linters, and then the unit and integration tests in python 3.6.
+For example, `tox -e lint,py27-unit,py27-integration` will run the linters, and then the unit and integration tests in python 2.7.
 
 To see all the available options, run `tox -l`.
 
