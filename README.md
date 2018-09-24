@@ -13,6 +13,7 @@ Amplify builds innovative and compelling digital educational products that empow
 amplify_aws_utils requires the following to be installed:
 ```
 python >= 2.7
+python >=3.6
 ```
 
 For development, `tox>=2.9.1` is recommended.
