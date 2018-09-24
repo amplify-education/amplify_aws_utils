@@ -1,7 +1,7 @@
 
 sudo: true
 language: python
-python: 2.7
+python: 3.6
 before_install:
   # need pandoc to convert markdown readme to reStructuredText that PyPi requires
   # Must sudo rm -f /etc/boto.cfg because of compiling error in travis-ci
