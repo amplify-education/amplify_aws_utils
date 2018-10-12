@@ -203,7 +203,7 @@ def wait_for_sshable(remotecmd, instance, timeout=15 * 60, quiet=False):
 
 def get_boto3_paged_results(func, results_key, next_token_key='NextToken',
                             next_request_token_key='NextToken', *args, **kwargs):
-    # type: (Callable, str, str, str, List, Dict) -> List
+    # type: (Callable, str, str, str, *Any, **Any) -> List
     """
     Helper method for automatically making multiple boto3 requests for their listing functions
     :param func: Boto3 function to call
