@@ -286,3 +286,16 @@ def dict_to_boto3_tags(tag_dict):
         {"Key": key, "Value": value}
         for key, value in tag_dict.items()
     ]
+
+
+def chunker(sequence, size):
+    """
+    Creates a generator that yields chunks of sequence in the given size
+    for group in chunker(range(0, 20), 5):
+        print group
+    # [0, 1, 2, 3, 4]
+    # [5, 6, 7, 8, 9]
+    # [10, 11, 12, 13, 14]
+    # [15, 16, 17, 18, 19]
+    """
+    return (sequence[position:position + size] for position in range(0, len(sequence), size))
