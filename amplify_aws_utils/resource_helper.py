@@ -2,7 +2,7 @@
 This module has utility functions for working with aws resources
 """
 import logging
-from typing import Dict, List, Sequence, Callable
+from typing import Dict, List, Sequence, Callable, Any
 import boto3
 from botocore.exceptions import ClientError, WaiterError
 from boto.exception import EC2ResponseError, BotoServerError
