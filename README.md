@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/amplify-education/amplify_aws_utils.svg?branch=master)](https://travis-ci.org/amplify-education/amplify_aws_utils)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/amplify-education/amplify_aws_utils/master/LICENSE)
+![PyPI - License](https://img.shields.io/pypi/l/amplify_aws_utils.svg)
 [![PyPI](https://img.shields.io/pypi/v/amplify-aws-utils.svg)](https://pypi.org/project/amplify-aws-utils/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/amplify-aws-utils.svg)](https://pypi.python.org/pypi/amplify-aws-utils)
 [![Downloads](https://img.shields.io/pypi/dm/amplify_aws_utils.svg)](https://pypistats.org/api/packages/amplify-aws-utils/recent)
