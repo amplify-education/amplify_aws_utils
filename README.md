@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/amplify-education/amplify_aws_utils.svg?branch=master)](https://travis-ci.org/amplify-education/amplify_aws_utils)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/amplify-education/amplify_aws_utils/master/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/nine.svg)](https://pypi.org/project/amplify-aws-utils/)
-[![Python Versions](https://img.shields.io/badge/Python-3.6-brightgreen.svg,https://img.shields.io/badge/Python-2.7-brightgreen.svg)](https://pypi.python.org/pypi/amplify_aws_utils)
-[![Downloads](https://img.shields.io/badge/dynamic/json.svg?label=downloads&url=https://img.shields.io/badge/dynamic/json.svg?label=Downloads&url=https%3A%2F%2Fpypistats.org%2Fapi%2Fpackages%2Famplify-aws-utils%2Frecent&query=data.last_month&colorB=brightgreen&suffix=%2FMonth)](https://pypistats.org/api/packages/amplify-aws-utils/recent)
+![PyPI - License](https://img.shields.io/pypi/l/amplify_aws_utils.svg)
+[![PyPI](https://img.shields.io/pypi/v/amplify-aws-utils.svg)](https://pypi.org/project/amplify-aws-utils/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/amplify-aws-utils.svg)](https://pypi.python.org/pypi/amplify-aws-utils)
+[![Downloads](https://img.shields.io/pypi/dm/amplify_aws_utils.svg)](https://pypistats.org/api/packages/amplify-aws-utils/recent)
 
 # amplify_aws_utils
 
