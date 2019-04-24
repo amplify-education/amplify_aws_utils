@@ -68,4 +68,11 @@ setup(
     zip_safe=False,
     install_requires=get_requirements(),
     test_suite='nose.collector',
+    # Add futures as a dependency that's only installed in python < 3
+    # It is built in to python3
+    # See link for how to handle conditional dependencies in python
+    # https://hynek.me/articles/conditional-python-dependencies/
+    extras_require={
+        ':python_version<"3"': ["typing"],
+    }
 )
