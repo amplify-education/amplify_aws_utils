@@ -45,6 +45,7 @@ def get_requirements():
 
 setup(
     name='amplify_aws_utils',
+    python_requires='>=3.6.0',
     version=get_version(),
     description="Utility functions for working with AWS resources",
     long_description=get_long_description(),
@@ -53,10 +54,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.6'
     ],
     keywords='',
     author='Amplify Education',
@@ -67,12 +65,5 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=get_requirements(),
-    test_suite='nose.collector',
-    # Add futures as a dependency that's only installed in python < 3
-    # It is built in to python3
-    # See link for how to handle conditional dependencies in python
-    # https://hynek.me/articles/conditional-python-dependencies/
-    extras_require={
-        ':python_version<"3"': ["typing"],
-    }
+    test_suite='nose.collector'
 )

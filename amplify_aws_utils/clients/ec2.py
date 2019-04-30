@@ -3,6 +3,8 @@ import logging
 from typing import List, Dict, Any, Set
 from datetime import datetime
 
+import botostubs
+
 from amplify_aws_utils.resource_helper import get_boto3_paged_results, throttled_call, create_filters
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -12,11 +14,11 @@ logger = logging.getLogger(__name__)
 class EC2:
     """Class for wrapping common EC2 API calls"""
 
-    def __init__(self, ec2_client):
+    def __init__(self, ec2_client: botostubs.EC2):
         self.ec2_client = ec2_client
 
-    def find_instances(self, amis=None, environment=None, instance_state=None):
-        # type: (Set[str], str, str) -> List[Dict[str, Any]]
+    def find_instances(self, amis: Set[str] = None, environment: str = None, instance_state: str = None) \
+            -> List[Dict[str, Any]]:
         """
         Function for finding instances, with optional AMI filtering.
         :param amis: A set of AMIs to filter by, optionally.
@@ -50,8 +52,7 @@ class EC2:
         )
         return instances
 
-    def find_amis(self, source_amis=None, newer_than=None):
-        # type: (Set[str], datetime) -> Set[str]
+    def find_amis(self, source_amis: Set[str] = None, newer_than: datetime = None) -> Set[str]:
         """
         Function for finding AMIs that are children of a given set of AMIs.
         :param source_amis: A set of parent ami-ids to find children of.

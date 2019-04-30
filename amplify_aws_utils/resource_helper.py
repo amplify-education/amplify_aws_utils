@@ -2,12 +2,13 @@
 This module has utility functions for working with aws resources
 """
 import logging
-from typing import Dict, List, Sequence, Callable, Any
-import boto3
-from botocore.exceptions import ClientError, WaiterError
-from boto.exception import EC2ResponseError, BotoServerError
-from amplify_aws_utils.jitter import Jitter
+from typing import Dict, List, Sequence, Callable
 
+import boto3
+from boto.exception import EC2ResponseError, BotoServerError
+from botocore.exceptions import ClientError, WaiterError
+
+from amplify_aws_utils.jitter import Jitter
 from .exceptions import (
     TimeoutError,
     ExpectedTimeoutError,
@@ -201,9 +202,8 @@ def wait_for_sshable(remotecmd, instance, timeout=15 * 60, quiet=False):
         .format(instance, timeout))
 
 
-def get_boto3_paged_results(func, results_key, next_token_key='NextToken',
-                            next_request_token_key='NextToken', *args, **kwargs):
-    # type: (Callable, str, str, str, *Any, **Any) -> List
+def get_boto3_paged_results(func: Callable, results_key: str, next_token_key: str = 'NextToken',
+                            next_request_token_key: str = 'NextToken', *args, **kwargs) -> List:
     """
     Helper method for automatically making multiple boto3 requests for their listing functions
     :param func: Boto3 function to call
@@ -236,8 +236,7 @@ def check_written_s3(object_name, expected_written_length, written_length):
         )
 
 
-def get_ssm_parameters(names):
-    # type: (Sequence[str]) -> Dict[str, str]
+def get_ssm_parameters(names: Sequence[str]) -> Dict[str, str]:
     """
     Convenience function for getting multiple SSM parameters
     :param names: List of names of parameters to get.

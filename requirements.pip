@@ -2,4 +2,4 @@
 # http://docs.python.org/2/distutils/setupscript.html#relationships-between-distributions-and-packages
 boto>=2.48.0, <3
 boto3>=1.4.7,<2
-requests==2.19.1
+requests>=2.21.0,<3
