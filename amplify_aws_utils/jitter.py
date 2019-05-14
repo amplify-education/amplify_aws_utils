@@ -11,7 +11,7 @@ class Jitter:
     """
     MAX_POLL_INTERVAL = 60  # seconds
 
-    def __init__(self, min_wait=3):
+    def __init__(self, min_wait: int = 3):
         self._time_passed = 0
         self._min_wait = min_wait
         self._previous_interval = 0

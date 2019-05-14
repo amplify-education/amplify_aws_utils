@@ -18,13 +18,17 @@ Amplify builds innovative and compelling digital educational products that empow
 ## Prerequisites
 amplify_aws_utils requires the following to be installed:
 ```
-python >= 2.7
-python >=3.6
+python >= 3.6
 ```
 
+## Installation
+This package can be installed using `pip`
+
+`pip install amplify_aws_utils`
+
+## Building From Source
 For development, `tox>=2.9.1` is recommended.
 
-## Building
 Python package can be built as follows:
 
 `python setup.py sdist`
@@ -32,9 +36,10 @@ Python package can be built as follows:
 This creates a package in `dist` directory.
 
 ## Running Tests
-As mentioned above, amplify_aws_utils uses tox, so running `tox` will automatically execute linters as well as the unit tests. You can also run functional and integration tests by using the -e argument.
+`amplify_aws_utils` uses `tox`. You will need to install tox with `pip install tox`. 
+Running `tox` will automatically execute linters as well as the unit tests. You can also run them individually with the -e argument.
 
-For example, `tox -e lint,py27-unit,py27-integration` will run the linters, and then the unit and integration tests in python 2.7.
+For example, `tox -e lint,py36-unit` will run the linters, and then the unit tests in python 3.6
 
 To see all the available options, run `tox -l`.
 
@@ -42,11 +47,6 @@ To see all the available options, run `tox -l`.
 Deployment is done with Travis.
 
 Package is built as described above, and is uploaded to PyPI repo using `devpi-client`
-
-## Installation
-This package can be installed using `pip`
-
-`pip install amplify_aws_utils`
 
 ## Usage
 Functions provided by this package can be imported after package has been installed.

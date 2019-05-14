@@ -2,6 +2,8 @@
 import logging
 from typing import List, Dict
 
+import botostubs
+
 from amplify_aws_utils.resource_helper import throttled_call, chunker
 
 
@@ -11,11 +13,10 @@ logger = logging.getLogger(__name__)
 class Config:
     """Class for wrapping common Config API calls"""
 
-    def __init__(self, config_client):
+    def __init__(self, config_client: botostubs.ConfigService):
         self.config_client = config_client
 
-    def put_evaluations(self, result_token, evaluations):
-        # type: (str, List[Dict[str, str]]) -> None
+    def put_evaluations(self, result_token: str, evaluations: List[Dict[str, str]]) -> None:
         """
         Convenience function for submitting evaluations to the AWS Config service in chunks of 100.
         :param result_token: The result token that yielded these evaluations.
