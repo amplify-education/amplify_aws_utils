@@ -3,4 +3,4 @@
 boto>=2.48.0, <3
 boto3>=1.4.7,<2
 botostubs>=0.9.1.9.139,<1
-requests>=2.21.0,<3
+requests>=2.19.1,<3
