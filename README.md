@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6388d63fcab944cab87094108edecdc0)](https://app.codacy.com/app/amplify-education/amplify_aws_utils?utm_source=github.com&utm_medium=referral&utm_content=amplify-education/amplify_aws_utils&utm_campaign=Badge_Grade_Settings)
 [![Build Status](https://travis-ci.org/amplify-education/amplify_aws_utils.svg?branch=master)](https://travis-ci.org/amplify-education/amplify_aws_utils)
 ![PyPI - License](https://img.shields.io/pypi/l/amplify_aws_utils.svg)
 [![PyPI](https://img.shields.io/pypi/v/amplify-aws-utils.svg)](https://pypi.org/project/amplify-aws-utils/)
