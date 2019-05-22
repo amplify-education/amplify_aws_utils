@@ -270,7 +270,9 @@ def boto3_tags_to_dict(boto3_tags):
     :return: Simple dictionary of tags
     """
     return {
-        tag['Key']: tag['Value']
+        # boto3 is not consistent with the tag dict it returns
+        # depending on the resource, the tag name will either be under a 'Key' or 'Name' key
+        tag.get('Key', tag.get('Name')): tag['Value']
         for tag in boto3_tags
     }
 
