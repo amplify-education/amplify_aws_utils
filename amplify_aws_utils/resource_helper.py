@@ -269,6 +269,8 @@ def boto3_tags_to_dict(boto3_tags):
     :param boto3_tags: List of boto3 tags.
     :return: Simple dictionary of tags
     """
+    if len(boto3_tags) == 0:
+        return {}
 
     # boto3 is not consistent with the tag dict it returns
     # depending on the resource, the tag name will either be under a 'Key' or 'Name' key or even in lowercase
