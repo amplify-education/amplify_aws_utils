@@ -269,10 +269,29 @@ def boto3_tags_to_dict(boto3_tags):
     :param boto3_tags: List of boto3 tags.
     :return: Simple dictionary of tags
     """
+
+    # boto3 is not consistent with the tag dict it returns
+    # depending on the resource, the tag name will either be under a 'Key' or 'Name' key or even in lowercase
+    # check all possibilities to figure out what key names are being used
+    possible_keys = ['Key', 'key', 'Name', 'name']
+    key_name = None
+    for key in boto3_tags[0].keys():
+        if key in possible_keys:
+            key_name = key
+            break
+
+    possible_values = ['Value', 'value']
+    value_name = None
+    for key in boto3_tags[0].keys():
+        if key in possible_values:
+            value_name = key
+            break
+
+    if not key_name or not value_name:
+        raise RuntimeError('Unable to identify tag key names in dict')
+
     return {
-        # boto3 is not consistent with the tag dict it returns
-        # depending on the resource, the tag name will either be under a 'Key' or 'Name' key
-        tag.get('Key', tag.get('Name')): tag['Value']
+        tag[key_name]: tag[value_name]
         for tag in boto3_tags
     }
 
