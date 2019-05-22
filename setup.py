@@ -17,13 +17,9 @@ VERSION_FILE = os.path.join("amplify_aws_utils", "version.py")
 
 def get_long_description():
     """Reads the long description from the README"""
-    # Attempt to convert the markdown readme to a reStructuredText one to work with legacy PyPi
-    try:
-        import pypandoc
-        return pypandoc.convert('README.md', 'rst')
-    except Exception as ex:
-        print("Unable to convert README to RST: '{}'".format(ex))
-        return " "
+    this_directory = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as file:
+        return file.read()
 
 
 def get_version():
@@ -54,7 +50,8 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6'
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     keywords='',
     author='Amplify Education',
