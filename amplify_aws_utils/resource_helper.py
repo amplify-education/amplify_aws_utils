@@ -276,18 +276,12 @@ def boto3_tags_to_dict(boto3_tags):
     # depending on the resource, the tag name will either be under a 'Key' or 'Name' key or even in lowercase
     # check all possibilities to figure out what key names are being used
     possible_keys = ['Key', 'key', 'Name', 'name']
-    key_name = None
-    for key in boto3_tags[0].keys():
-        if key in possible_keys:
-            key_name = key
-            break
+    actual_keys = [key for key in boto3_tags[0].keys() if key in possible_keys]
+    key_name = actual_keys[0] if actual_keys else None
 
     possible_values = ['Value', 'value']
-    value_name = None
-    for key in boto3_tags[0].keys():
-        if key in possible_values:
-            value_name = key
-            break
+    actual_values = [key for key in boto3_tags[0].keys() if key in possible_values]
+    value_name = actual_values[0] if actual_values else None
 
     if not key_name or not value_name:
         raise RuntimeError('Unable to identify tag key names in dict')
