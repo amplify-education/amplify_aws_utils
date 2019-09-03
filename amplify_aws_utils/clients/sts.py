@@ -7,6 +7,7 @@ import botostubs
 
 class STS:
     """Utilities for assuming AWS roles"""
+
     def __init__(self, sts_client: botostubs.STS):
         self.sts_client = sts_client
 
@@ -19,14 +20,20 @@ class STS:
 
         return assumed_role_object['Credentials']
 
-    def get_boto3_client_for_account(self, account_id: str, region: str, role_name: str, client_name: str) \
+    def get_boto3_client_for_account(self, account_id: str, role_name: str, client_name: str, region=None) \
             -> Any:
         """Return a boto3 client instance using an assumed role for an account id"""
         credentials = self.assume_role(account_id, role_name)
-        return boto3.client(
-            client_name,
-            aws_access_key_id=credentials['AccessKeyId'],
-            aws_secret_access_key=credentials['SecretAccessKey'],
-            aws_session_token=credentials['SessionToken'],
-            region_name=region
-        )
+
+        kwargs = {
+            'service_name': client_name,
+            'aws_access_key_id': credentials['AccessKeyId'],
+            'aws_secret_access_key': credentials['SecretAccessKey'],
+            'aws_session_token': credentials['SessionToken'],
+
+        }
+
+        if region:
+            kwargs['region_name'] = region
+
+        return boto3.client(**kwargs)
