@@ -111,3 +111,7 @@ node_modules/
 
 # Pytype
 .pytype
+
+# mypy
+.mypy_cache
+
