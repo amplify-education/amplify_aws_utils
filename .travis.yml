@@ -8,9 +8,10 @@ before_install:
   # see: https://github.com/travis-ci/travis-ci/issues/7940
   - sudo rm -f /etc/boto.cfg
 install:
-  - pip install tox-travis codacy-coverage
+  - pip install tox-travis codacy-coverage pre-commit
 script:
   - bash bin/versionCheck.sh $TRAVIS_BRANCH $TRAVIS_PULL_REQUEST
+  - pre-commit run --verbose --all-files
   - tox
 deploy:
   provider: pypi
