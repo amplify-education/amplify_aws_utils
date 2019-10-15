@@ -34,3 +34,9 @@ class S3URI:
     def uri(self) -> str:
         """The original URI"""
         return self._parsed.geturl()
+
+    def __repr__(self):
+        return "S3URI(uri='%s')" % self.uri
+
+    def __str__(self):
+        return self.uri
