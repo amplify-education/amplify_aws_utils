@@ -3,16 +3,23 @@ Tests for resource Helper
 """
 import random
 from unittest import TestCase
+from unittest.mock import patch, MagicMock, create_autospec
 
 from boto.exception import EC2ResponseError
 import boto.ec2.instance
 from botocore.exceptions import ClientError, WaiterError
-from mock import patch, MagicMock, create_autospec
 
 from amplify_aws_utils.exceptions import ExpectedTimeoutError
 from amplify_aws_utils.exceptions import TimeoutError
-from amplify_aws_utils.resource_helper import Jitter, keep_trying, throttled_call, wait_for_state, \
-    wait_for_state_boto3, wait_for_sshable
+from amplify_aws_utils.resource_helper import (
+    Jitter,
+    keep_trying,
+    throttled_call,
+    wait_for_state,
+    wait_for_state_boto3,
+    wait_for_sshable,
+    dynamodb_record_to_dict,
+)
 
 
 # time.sleep is being patched but not referenced.
@@ -213,3 +220,28 @@ class ResourceHelperTests(TestCase):
         """Test wait_for_sshable with timeout"""
         mock_remote_cmd = MagicMock(return_value=[1])
         self.assertRaises(TimeoutError, wait_for_sshable, mock_remote_cmd, self.mock_instance(), 30)
+
+    def test_dynamodb_record_to_dict(self):
+        """Test dynamodb_record_to_dict happy"""
+        mock_record = {
+            "foo": {
+                "S": "bar",
+            },
+            "baz": {
+                "N": "100",
+            }
+        }
+
+        expected = {
+            "foo": "bar",
+            "baz": "100",
+        }
+
+        actual = dynamodb_record_to_dict(
+            record=mock_record,
+        )
+
+        self.assertEqual(
+            expected,
+            actual,
+        )

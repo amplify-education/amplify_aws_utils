@@ -315,3 +315,27 @@ def chunker(sequence, size):
     # [15, 16, 17, 18, 19]
     """
     return (sequence[position:position + size] for position in range(0, len(sequence), size))
+
+
+def dynamodb_record_to_dict(record: Dict[str, Dict[str, str]]) -> Dict[str, str]:
+    """
+    Converts a DynamoDB Record into a normal Python dictionary.
+    :param record: A DynamoDB Record that looks like:
+    {
+        "foo": {
+            "S": "bar"
+        },
+        "baz": {
+            "N": "100"
+        }
+    }
+    :return: A dictionary that looks like:
+    {
+        "foo": "bar",
+        "baz": "100",
+    }
+    """
+    return {
+        key: list(value.values())[0]
+        for key, value in record.items()
+    }
