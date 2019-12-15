@@ -6,7 +6,7 @@ from typing import Dict, List, Sequence, Callable
 
 import boto3
 from boto.exception import EC2ResponseError, BotoServerError
-from botocore.exceptions import ClientError, WaiterError
+from botocore.exceptions import ClientError, WaiterError, ReadTimeoutError
 
 from amplify_aws_utils.jitter import Jitter
 from .exceptions import (
@@ -99,7 +99,7 @@ def throttled_call(fun, *args, **kwargs):
                 raise
 
             time_passed = jitter.backoff()
-        except WaiterError:
+        except (ReadTimeoutError, WaiterError):
             if time_passed > max_time:
                 raise
 
