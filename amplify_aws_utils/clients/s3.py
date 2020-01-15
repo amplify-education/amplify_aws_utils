@@ -3,7 +3,7 @@ Manage interaction with S3 API
 """
 import hashlib
 import logging
-from typing import Dict, Any, Sequence
+from typing import Dict, Any, Sequence, IO
 
 import botostubs
 from botocore.exceptions import ClientError
@@ -87,6 +87,32 @@ class S3:
         )["Body"].read().decode("utf-8")
 
         return result
+
+    def download_file(self, bucket: str, key: str, file_obj: IO, wait: bool = False, **kwargs):
+        """
+        Convenience function for downloading an object out of S3.
+        :param bucket: Name of the bucket.
+        :param key: Name of the key.
+        :param file_obj: File-like object to download the file to.
+        :param wait: If true, will wait up to 100 seconds for the object to exist before reading it.
+        :param kwargs: Any additional arguments to pass to the underlying boto call.
+        """
+        if wait:
+            logger.info("Waiting for s3://%s/%s to exist with additional params: %s", bucket, key, kwargs)
+            waiter = self.s3.get_waiter('object_exists')
+            waiter.wait(
+                Bucket=bucket,
+                Key=key,
+                **kwargs
+            )
+
+        throttled_call(
+            self.s3.download_fileobj,
+            Bucket=bucket,
+            Key=key,
+            Fileobj=file_obj,
+            ExtraArgs=kwargs,
+        )
 
     def write_file(self, bucket: str, key: str, body: str, **kwargs):
         """
