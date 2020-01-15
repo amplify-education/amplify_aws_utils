@@ -3,6 +3,10 @@
 import hashlib
 import random
 import string
+from unittest.mock import MagicMock
+
+from io import BytesIO
+
 import unittest
 from unittest import TestCase
 from typing import Dict, Set
@@ -146,6 +150,26 @@ class TestS3Helper(TestCase):
         )
 
         self.assertEqual(TEST_OBJECT_BODY, contents)
+
+    def test_download_file(self):
+        """Test that we can download a file"""
+        mock_s3_client = MagicMock()
+        self.helper.s3 = mock_s3_client
+        key = random.choice(tuple(TEST_OBJECT_KEYS))
+        file_obj = BytesIO()
+
+        self.helper.download_file(
+            bucket=TEST_BUCKET_NAME,
+            key=key,
+            file_obj=file_obj,
+        )
+
+        mock_s3_client.download_fileobj.assert_called_once_with(
+            Bucket=TEST_BUCKET_NAME,
+            Key=key,
+            Fileobj=file_obj,
+            ExtraArgs={},
+        )
 
     def test_write_file(self):
         """Test that we can write a file"""
