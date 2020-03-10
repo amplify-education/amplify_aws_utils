@@ -92,8 +92,10 @@ def throttled_call(fun, *args, **kwargs):
                 logger.exception("Failed to run %s.", fun)
 
             error_code = err.response['Error'].get('Code', 'Unknown')
-            is_throttle_exception = any(key_word in error_code
-                                        for key_word in ("Throttling", "RequestLimitExceeded"))
+            is_throttle_exception = any(
+                key_word in error_code
+                for key_word in ("Throttling", "RequestLimitExceeded", "TooManyRequestsException")
+            )
 
             if not is_throttle_exception or time_passed > max_time:
                 raise
