@@ -30,7 +30,7 @@ jobs:
     - stage: deploy
       python: 3.6
       script: skip
-      after_success: skip
+      after_success: false
       before_deploy:
         - sed --expression "s|GIT_HASH|$TRAVIS_COMMIT|g" --in-place **/version.py
       deploy:
