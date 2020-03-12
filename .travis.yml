@@ -1,25 +1,41 @@
-
 sudo: true
 language: python
-python: 3.6
-before_install:
-  # need pandoc to convert markdown readme to reStructuredText that PyPi requires
-  # Must sudo rm -f /etc/boto.cfg because of compiling error in travis-ci
-  # see: https://github.com/travis-ci/travis-ci/issues/7940
-  - sudo rm -f /etc/boto.cfg
+python:
+  - 3.6
+  - 3.7
+  - 3.8
+
 install:
-  - pip install tox-travis codacy-coverage pre-commit
+  - pip install tox-travis codacy-coverage
 script:
-  - bash bin/versionCheck.sh $TRAVIS_BRANCH $TRAVIS_PULL_REQUEST
-  - pre-commit run --verbose --all-files
   - tox
-deploy:
-  provider: pypi
-  user: $PYPI_USER
-  password: $PYPI_PASSWORD
-  on:
-    branch: master
-before_deploy:
-  - sed --expression "s|GIT_HASH|$TRAVIS_COMMIT|g" --in-place **/version.py
 after_success:
   - python-codacy-coverage -r reports/coverage.xml
+
+stages:
+  - lint
+  - test
+  - deploy
+
+jobs:
+  include:
+    - stage: lint
+      python: 3.6
+      script:
+        - bash bin/versionCheck.sh $TRAVIS_BRANCH $TRAVIS_PULL_REQUEST
+        - pip install tox pre-commit
+        - pre-commit run --verbose --all-files
+        - tox -e lint
+      after_success: skip
+    - stage: deploy
+      python: 3.6
+      script: skip
+      after_success: skip
+      before_deploy:
+        - sed --expression "s|GIT_HASH|$TRAVIS_COMMIT|g" --in-place **/version.py
+      deploy:
+        provider: pypi
+        user: $PYPI_USER
+        password: $PYPI_PASSWORD
+        on:
+          branch: master
