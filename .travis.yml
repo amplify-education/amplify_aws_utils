@@ -1,25 +1,37 @@
 sudo: true
 language: python
 python:
-  - "3.6"
-  - "3.7"
-  - "3.8"
+  - 3.6
+  - 3.7
+  - 3.8
+
+install:
+  - pip install tox-travis codacy-coverage
+script:
+  - tox
+after_success:
+  - python-codacy-coverage -r reports/coverage.xml
+
+stages:
+  - lint
+  - test
+  - deploy
+
 jobs:
   include:
     - stage: lint
       python: 3.6
       script:
-          - pip install tox-travis codacy-coverage pre-commit
-          - bash bin/versionCheck.sh $TRAVIS_BRANCH $TRAVIS_PULL_REQUEST
-          - pre-commit run --verbose --all-files
-          - tox -e lint
-    - stage: test
-      script:
-        - pip install tox-travis codacy-coverage pre-commit
-        - tox
+        - bash bin/versionCheck.sh $TRAVIS_BRANCH $TRAVIS_PULL_REQUEST
+        - pip install tox pre-commit
+        - pre-commit run --verbose --all-files
+        - tox -e lint
+      after_success: skip
     - stage: deploy
       python: 3.6
-      script:
+      script: skip
+      after_success: skip
+      before_deploy:
         - sed --expression "s|GIT_HASH|$TRAVIS_COMMIT|g" --in-place **/version.py
       deploy:
         provider: pypi
@@ -27,6 +39,3 @@ jobs:
         password: $PYPI_PASSWORD
         on:
           branch: master
-    - stage: after_success
-      script:
-        - python-codacy-coverage -r reports/coverage.xml
