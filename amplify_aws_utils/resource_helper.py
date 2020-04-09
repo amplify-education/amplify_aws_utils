@@ -268,9 +268,8 @@ def get_ssm_parameter(name: str) -> str:
         Name=name,
         WithDecryption=True
     )
-    ssm_parameter = results["Parameter"]['Value']
 
-    return ssm_parameter
+    return results["Parameter"]['Value']
 
 
 # DEPRACATED
