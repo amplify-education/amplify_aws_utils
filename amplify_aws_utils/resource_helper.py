@@ -255,6 +255,24 @@ def get_ssm_parameters(names: Sequence[str]) -> Dict[str, str]:
     return {param['Name']: param['Value'] for param in results['Parameters']}
 
 
+def get_ssm_parameter(name: str) -> str:
+    """
+    Convenience function for getting a single SSM parameter
+    :param name: Name of the parameter to get.
+    :return: SSM parameter value.
+    """
+    client = boto3.client('ssm')
+
+    results = throttled_call(
+        client.get_parameter,
+        Name=name,
+        WithDecryption=True
+    )
+    ssm_parameter = results["Parameter"]['Value']
+
+    return ssm_parameter
+
+
 # DEPRACATED
 def tag2dict(tags):
     """
