@@ -204,8 +204,14 @@ def wait_for_sshable(remotecmd, instance, timeout=15 * 60, quiet=False):
         .format(instance, timeout))
 
 
-def get_boto3_paged_results(func: Callable, results_key: str, next_token_key: str = 'NextToken',
-                            next_request_token_key: str = 'NextToken', *args, **kwargs) -> List:
+def get_boto3_paged_results(
+        func: Callable,
+        results_key: str,
+        next_token_key: str = 'NextToken',
+        next_request_token_key: str = 'NextToken',
+        *args,
+        **kwargs
+) -> List:
     """
     Helper method for automatically making multiple boto3 requests for their listing functions
     :param func: Boto3 function to call
@@ -219,7 +225,7 @@ def get_boto3_paged_results(func: Callable, results_key: str, next_token_key: st
     if not response_items:
         logger.warning("No items found in response=%s", response)
 
-    while response.get(next_token_key) and response.get(results_key):
+    while response.get(next_token_key):
         kwargs[next_request_token_key] = response[next_token_key]
         response = throttled_call(func, *args, **kwargs)
         response_items += response[results_key]
