@@ -110,6 +110,14 @@ def throttled_call(fun, *args, **kwargs):
             time_passed = jitter.backoff()
 
 
+def _is_proper_iterable(obj) -> bool:
+    """
+    Convenience function to determine if obj is a proper iterable.
+    Had to break this out into a function to make pycodestyle happy.
+    """
+    return hasattr(obj, "__iter__") and not issubclass(obj.__class__, str)
+
+
 @dataclass
 class ThrottledException:
     """
@@ -133,8 +141,7 @@ class ThrottledException:
                             str(self.exception_class))
 
         if self.error_message_regexes:
-            if (not hasattr(self.error_message_regexes, "__iter__") or
-                    issubclass(self.error_message_regexes.__class__, str)):
+            if not _is_proper_iterable(self.error_message_regexes):
                 raise TypeError("error_message_regexes is not a proper iterable: '%s'" %
                                 str(type(self.error_message_regexes)))
 
@@ -171,7 +178,7 @@ def throttled_call_with_exceptions(fun, throttled_exceptions: Iterable[Throttled
     if not throttled_exceptions:
         throttled_exceptions = []
 
-    if not hasattr(throttled_exceptions, "__iter__") or issubclass(throttled_exceptions.__class__, str):
+    if not _is_proper_iterable(throttled_exceptions):
         raise TypeError("param 'throttled_exceptions' is not a proper iterable: '%s'" %
                         str(type(throttled_exceptions)))
 

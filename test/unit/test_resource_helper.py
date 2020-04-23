@@ -246,8 +246,10 @@ class ResourceHelperTests(TestCase):
     @patch('time.sleep', return_value=None)
     # pylint: disable=invalid-name
     def test_throttled_call_with_exceptions_handled_exception(self, mock_sleep):
-        # pylint: disable=line-too-long
-        """Test throttled_call_with_exceptions, throttles and doesn't raise Exception, when function raises Exception"""
+        """
+        Test throttled_call_with_exceptions, throttles and doesn't raise Exception, when function raises
+        Exception
+        """
 
         te_with_correct_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_CORRECT_REGEX
         te_with_wrong_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_REGEX
@@ -275,8 +277,10 @@ class ResourceHelperTests(TestCase):
     @patch('time.sleep', return_value=None)
     # pylint: disable=invalid-name
     def test_throttled_call_with_exceptions_handled_exception_with_timeout(self, mock_sleep):
-        # pylint: disable=line-too-long
-        """Test throttled_call_with_exceptions, throttles and eventually raises Exception, when function raises handled Exception"""
+        """
+        Test throttled_call_with_exceptions, throttles and eventually raises, when func raises handled
+        Exception
+        """
 
         te_with_correct_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_CORRECT_REGEX
         te_with_wrong_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_REGEX
@@ -309,8 +313,10 @@ class ResourceHelperTests(TestCase):
     @patch('time.sleep', return_value=None)
     # pylint: disable=invalid-name
     def test_throttled_call_with_exceptions_unhandled_exception_with_raise(self, mock_sleep):
-        # pylint: disable=line-too-long
-        """Test throttled_call_with_exceptions, doesn't throttle and immediately raises Exception, when function raises unhandled Exception"""
+        """
+        Test throttled_call_with_exceptions, no throttle and immediately raises, when func raises unhandled
+        Exception
+        """
 
         te_with_wrong_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_REGEX
         te_with_wrong_exc = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_EXC
