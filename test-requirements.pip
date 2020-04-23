@@ -6,6 +6,7 @@ mypy
 nose>=1.1,<2
 nose-cov>=1.5,<2
 mock>=1.0.1,<2
+requests-mock>=1.7.0,<2
 coverage>=4.5.3,<5
 # locked moto version b/c new version has a bug where it cant import `AWSResponse`
 # Actual error: ImportError (cannot import name 'AWSResponse') ... ERROR
