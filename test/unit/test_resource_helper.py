@@ -26,7 +26,6 @@ from amplify_aws_utils.resource_helper import (
 
 class TestThrottleError(RuntimeError):
     """Exception for testing throttled_call_with_exceptions"""
-    pass
 
 
 DEFAULT_TEST_THROTTLE_ERROR = TestThrottleError("some test Exception message")
@@ -171,76 +170,83 @@ class ResourceHelperTests(TestCase):
         """Test ThrottledException, handles successful call to matches"""
 
         # test match when there's no error_message_regexes
-        te = ThrottledException(exception_class=RuntimeError)
-        self.assertTrue(te.matches(DEFAULT_TEST_THROTTLE_ERROR))
-        self.assertTrue(te.matches(DEFAULT_RUNTIME_ERROR))
+        texc = ThrottledException(exception_class=RuntimeError)
+        self.assertTrue(texc.matches(DEFAULT_TEST_THROTTLE_ERROR))
+        self.assertTrue(texc.matches(DEFAULT_RUNTIME_ERROR))
 
-        te = ThrottledException(exception_class=RuntimeError,
-                                error_message_regexes=[])
-        self.assertTrue(te.matches(DEFAULT_TEST_THROTTLE_ERROR))
-        self.assertTrue(te.matches(DEFAULT_RUNTIME_ERROR))
+        texc = ThrottledException(exception_class=RuntimeError,
+                                  error_message_regexes=[])
+        self.assertTrue(texc.matches(DEFAULT_TEST_THROTTLE_ERROR))
+        self.assertTrue(texc.matches(DEFAULT_RUNTIME_ERROR))
 
-        te = ThrottledException(exception_class=RuntimeError,
-                                error_message_regexes=None)
-        self.assertTrue(te.matches(DEFAULT_TEST_THROTTLE_ERROR))
-        self.assertTrue(te.matches(DEFAULT_RUNTIME_ERROR))
+        texc = ThrottledException(exception_class=RuntimeError,
+                                  error_message_regexes=None)
+        self.assertTrue(texc.matches(DEFAULT_TEST_THROTTLE_ERROR))
+        self.assertTrue(texc.matches(DEFAULT_RUNTIME_ERROR))
 
         # test match when there's error_message_regexes
-        te = ThrottledException(exception_class=RuntimeError,
-                                error_message_regexes=["some val"])
-        self.assertTrue(te.matches(RuntimeError("has 'some val' in message")))
+        texc = ThrottledException(exception_class=RuntimeError,
+                                  error_message_regexes=["some val"])
+        self.assertTrue(texc.matches(RuntimeError("has 'some val' in message")))
 
-        te = ThrottledException(exception_class=RuntimeError,
-                                error_message_regexes=["some val", "another val", "yet a final val"])
-        self.assertTrue(te.matches(RuntimeError("has 'some val' in message")))
-        self.assertTrue(te.matches(RuntimeError("has another val in message")))
-        self.assertTrue(te.matches(RuntimeError("has yet a final val in message")))
-        self.assertTrue(te.matches(TestThrottleError("this is a subclass of RuntimeError and has some val in it")))
+        texc = ThrottledException(exception_class=RuntimeError,
+                                  error_message_regexes=["some val", "another val", "yet a final val"])
+        self.assertTrue(texc.matches(RuntimeError("has 'some val' in message")))
+        self.assertTrue(texc.matches(RuntimeError("has another val in message")))
+        self.assertTrue(texc.matches(RuntimeError("has yet a final val in message")))
+        self.assertTrue(texc.matches(TestThrottleError("subclass of RuntimeError and has some val")))
 
-        te = ThrottledException(exception_class=RuntimeError,
-                                error_message_regexes=["some .* message"])
-        self.assertTrue(te.matches(RuntimeError("has 'some val' in message")))
+        texc = ThrottledException(exception_class=RuntimeError,
+                                  error_message_regexes=["some .* message"])
+        self.assertTrue(texc.matches(RuntimeError("has 'some val' in message")))
 
-        te = ThrottledException(exception_class=RuntimeError,
-                                error_message_regexes=["some .* message", "another .* message", "yet a final .* message"])
-        self.assertTrue(te.matches(RuntimeError("has 'some val' in message")))
-        self.assertTrue(te.matches(RuntimeError("has another val in message")))
-        self.assertTrue(te.matches(RuntimeError("has yet a final val in message")))
-        self.assertTrue(te.matches(TestThrottleError("this is a subclass of RuntimeError and has some val in message")))
+        texc = ThrottledException(exception_class=RuntimeError,
+                                  error_message_regexes=["some .* message",
+                                                         "another .* message",
+                                                         "yet a final .* message"]
+                                  )
+        self.assertTrue(texc.matches(RuntimeError("has 'some val' in message")))
+        self.assertTrue(texc.matches(RuntimeError("has another val in message")))
+        self.assertTrue(texc.matches(RuntimeError("has yet a final val in message")))
+        self.assertTrue(texc.matches(TestThrottleError("subclass of RuntimeError, has some val in message")))
 
     def test_throttled_exception_matches_fail(self):
         """Test ThrottledException, handles failed call to matches"""
 
         # test there's no match when there's no error_message_regexes
-        te = ThrottledException(exception_class=RuntimeError)
+        texc = ThrottledException(exception_class=RuntimeError)
         # some bogus inputs
-        self.assertFalse(te.matches(None))
-        self.assertFalse(te.matches(""))
-        self.assertFalse(te.matches(1))
+        self.assertFalse(texc.matches(None))
+        self.assertFalse(texc.matches(""))
+        self.assertFalse(texc.matches(1))
         # not a subclass of RuntimeError
-        self.assertFalse(te.matches(SystemError("has some val for err message")))
+        self.assertFalse(texc.matches(SystemError("has some val for err message")))
 
         # test there's no match when there's error_message_regexes
-        te = ThrottledException(exception_class=RuntimeError,
-                                error_message_regexes=["some val"])
+        texc = ThrottledException(exception_class=RuntimeError,
+                                  error_message_regexes=["some val"])
         # not a subclass of RuntimeError
-        self.assertFalse(te.matches(SystemError("has some val for err message")))
+        self.assertFalse(texc.matches(SystemError("has some val for err message")))
         # no matching error message
-        self.assertFalse(te.matches(RuntimeError("has no matching err message")))
+        self.assertFalse(texc.matches(RuntimeError("has no matching err message")))
 
-        te = ThrottledException(exception_class=RuntimeError,
-                                error_message_regexes=["some .* message"])
-        self.assertFalse(te.matches(RuntimeError("has 'wrong val' in message that doesn't match regex")))
+        texc = ThrottledException(exception_class=RuntimeError,
+                                  error_message_regexes=["some .* message"])
+        self.assertFalse(texc.matches(RuntimeError("has 'wrong val' in message that doesn't match regex")))
 
-        te = ThrottledException(exception_class=RuntimeError,
-                                error_message_regexes=["some .* message", "another .* message", "yet a final .* message"])
-        self.assertFalse(te.matches(RuntimeError("has 'wrong val' in message")))
-        self.assertFalse(te.matches(RuntimeError("has another val in mssg")))
-        self.assertFalse(te.matches(RuntimeError("has yet a wrong final val in message")))
-        self.assertFalse(te.matches(TestThrottleError("this is a subclass of RuntimeError and has wrong val in message")))
+        texc = ThrottledException(exception_class=RuntimeError,
+                                  error_message_regexes=["some .* message",
+                                                         "another .* message",
+                                                         "yet a final .* message"])
+        self.assertFalse(texc.matches(RuntimeError("has 'wrong val' in message")))
+        self.assertFalse(texc.matches(RuntimeError("has another val in mssg")))
+        self.assertFalse(texc.matches(RuntimeError("has yet a wrong final val in message")))
+        self.assertFalse(texc.matches(TestThrottleError("subclass of RuntimeError, wrong val in message")))
 
     @patch('time.sleep', return_value=None)
+    # pylint: disable=invalid-name
     def test_throttled_call_with_exceptions_handled_exception(self, mock_sleep):
+        # pylint: disable=line-too-long
         """Test throttled_call_with_exceptions, throttles and doesn't raise Exception, when function raises Exception"""
 
         te_with_correct_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_CORRECT_REGEX
@@ -267,7 +273,9 @@ class ResourceHelperTests(TestCase):
             self.assertEqual(3, mock_func.call_count)
 
     @patch('time.sleep', return_value=None)
+    # pylint: disable=invalid-name
     def test_throttled_call_with_exceptions_handled_exception_with_timeout(self, mock_sleep):
+        # pylint: disable=line-too-long
         """Test throttled_call_with_exceptions, throttles and eventually raises Exception, when function raises handled Exception"""
 
         te_with_correct_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_CORRECT_REGEX
@@ -299,7 +307,9 @@ class ResourceHelperTests(TestCase):
             self.assertTrue(mock_func.call_count >= 5)
 
     @patch('time.sleep', return_value=None)
+    # pylint: disable=invalid-name
     def test_throttled_call_with_exceptions_unhandled_exception_with_raise(self, mock_sleep):
+        # pylint: disable=line-too-long
         """Test throttled_call_with_exceptions, doesn't throttle and immediately raises Exception, when function raises unhandled Exception"""
 
         te_with_wrong_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_REGEX
@@ -323,6 +333,7 @@ class ResourceHelperTests(TestCase):
             self.assertEqual(1, mock_func.call_count)
 
     @patch('time.sleep', return_value=None)
+    # pylint: disable=invalid-name
     def test_throttled_call_with_exceptions_no_exception(self, mock_sleep):
         """Test throttled_call_with_exceptions, doesn't throttle, when function doesn't raise Exception"""
 
@@ -352,6 +363,7 @@ class ResourceHelperTests(TestCase):
             self.assertEqual(1, mock_func.call_count)
 
     @patch('time.sleep', return_value=None)
+    # pylint: disable=invalid-name
     def test_throttled_call_with_exceptions_bad_param(self, mock_sleep):
         """Test throttled_call_with_exceptions, handles bad param"""
 

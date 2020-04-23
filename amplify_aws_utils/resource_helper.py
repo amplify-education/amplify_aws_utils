@@ -157,8 +157,8 @@ class ThrottledException:
                 re.search(err_mssg_regex, str(err))
                 for err_mssg_regex in self.error_message_regexes
             )
-        else:
-            return True
+
+        return True
 
 
 def throttled_call_with_exceptions(fun, throttled_exceptions: Iterable[ThrottledException], *args, **kwargs):
