@@ -2,9 +2,8 @@
 This module has utility functions for working with aws resources
 """
 import logging
-import re
-from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Sequence, Callable
+from functools import wraps, partial
+from typing import Callable, Dict, List, Sequence
 
 import boto3
 from boto.exception import EC2ResponseError, BotoServerError
@@ -110,103 +109,45 @@ def throttled_call(fun, *args, **kwargs):
             time_passed = jitter.backoff()
 
 
-def _is_proper_iterable(obj) -> bool:
+def throttled_call_on_exception(func: Callable = None, is_throttled_exception: Callable = None):
     """
-    Convenience function to determine if obj is a proper iterable.
-    Had to break this out into a function to make pycodestyle happy.
-    """
-    return hasattr(obj, "__iter__") and not issubclass(obj.__class__, str)
-
-
-@dataclass
-class ThrottledException:
-    """
-    Data structure to encapsulate criteria for an Exception to be handled as a special
-    case and be temporarily ignored (throttled) in throttled_call_with_exceptions().
-
-    :param exception_class: Required. The Exception class that matches() will compare
-    an Exception against. If the Exception is a subclass of exception_class, it's considered
-    a match.
-    :param error_message_regexes: Optional. If not set, matches() function will only compare
-    an Exception against exception_class. If set, matches() will also compare the error
-    message in the Exception against the regex values specified in this param. At least one
-    of the regex values in the list must match.
-    """
-    exception_class: BaseException
-    error_message_regexes: Iterable[str] = field(default=None)
-
-    def __post_init__(self):
-        if not issubclass(self.exception_class, BaseException):
-            raise TypeError("exception_class is not subclass of BaseException: '%s'" %
-                            str(self.exception_class))
-
-        if self.error_message_regexes:
-            if not _is_proper_iterable(self.error_message_regexes):
-                raise TypeError("error_message_regexes is not a proper iterable: '%s'" %
-                                str(type(self.error_message_regexes)))
-
-            for err_mssg_regex in self.error_message_regexes:
-                if not issubclass(err_mssg_regex.__class__, str):
-                    raise TypeError("found non str element in error_message_regexes: '%s'" %
-                                    str(type(err_mssg_regex)))
-
-    def matches(self, err: BaseException) -> bool:
-        """
-        Returns True if param err is a subclass of Exception represented by this instance
-        and if this instance has has an error message to match, check for it in param err
-        :param err: Error/Exception to compare against
-        """
-        if not issubclass(err.__class__, self.exception_class):
-            return False
-
-        if self.error_message_regexes:
-            return any(
-                re.search(err_mssg_regex, str(err))
-                for err_mssg_regex in self.error_message_regexes
-            )
-
-        return True
-
-
-def throttled_call_with_exceptions(fun, throttled_exceptions: Iterable[ThrottledException], *args, **kwargs):
-    """
-    Execute function fun with args and kwargs until it does
-    not throw an exception specified in param allowed_exceptions or 5 minutes have passed.
+    Decorator to execute function until it does not throw an exception that's
+    whitelisted in param 'is_throttled_exception' OR 5 minutes have passed.
 
     After each failed attempt a delay is introduced using Jitter.backoff() function.
+
+    :param func: the function to decorate
+    :param is_throttled_exception: Optional. Defaults to None. User defined function to
+           determine if an Exception meets some criteria for being throttled. If None,
+           all Exceptions will be throttled. Signature of the function must have as
+           first positional arg an Exception to check and return a bool, like so:
+               def func(err: BaseException) -> bool
     """
-    if not throttled_exceptions:
-        throttled_exceptions = []
+    if func is None:
+        return partial(throttled_call_on_exception, is_throttled_exception=is_throttled_exception)
 
-    if not _is_proper_iterable(throttled_exceptions):
-        raise TypeError("param 'throttled_exceptions' is not a proper iterable: '%s'" %
-                        str(type(throttled_exceptions)))
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        max_time = 5 * 60
+        jitter = Jitter()
+        time_passed = 0
 
-    for throttled_exception in throttled_exceptions:
-        if not isinstance(throttled_exception, ThrottledException):
-            raise TypeError("Elements of param 'throttled_exceptions' must be of type ThrottledException")
+        while True:
+            try:
+                return func(*args, **kwargs)
+            except BaseException as err:
+                if logging.getLogger().level == logging.DEBUG:
+                    logger.exception("Failed to run function %s, args: %s, kwargs: %s",
+                                     str(func), str(args), str(kwargs))
 
-    max_time = 5 * 60
-    jitter = Jitter()
-    time_passed = 0
+                if time_passed > max_time:
+                    raise
 
-    while True:
-        try:
-            return fun(*args, **kwargs)
-        except BaseException as err:
+                if is_throttled_exception and not is_throttled_exception(err):
+                    raise
 
-            if logging.getLogger().level == logging.DEBUG:
-                logger.exception("Failed to run %s.", fun)
-
-            is_throttle_exception = any(
-                throttled_exc.matches(err)
-                for throttled_exc in throttled_exceptions
-            )
-
-            if not is_throttle_exception or time_passed > max_time:
-                raise
-
-            time_passed = jitter.backoff()
+                time_passed = jitter.backoff()
+    return wrapper
 
 
 # pylint: disable=no-else-return

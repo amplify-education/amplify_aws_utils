@@ -14,9 +14,8 @@ from amplify_aws_utils.exceptions import TimeoutError
 from amplify_aws_utils.resource_helper import (
     Jitter,
     keep_trying,
-    ThrottledException,
     throttled_call,
-    throttled_call_with_exceptions,
+    throttled_call_on_exception,
     wait_for_state,
     wait_for_state_boto3,
     wait_for_sshable,
@@ -24,35 +23,21 @@ from amplify_aws_utils.resource_helper import (
 )
 
 
-class TestThrottleError(RuntimeError):
-    """Exception for testing throttled_call_with_exceptions"""
+class SupportedThrottleError(BaseException):
+    """Simple error for unit test of supported Exceptions"""
 
 
-DEFAULT_TEST_THROTTLE_ERROR = TestThrottleError("some test Exception message")
-DEFAULT_RUNTIME_ERROR = RuntimeError("some test Exception message")
-
-DEFAULT_THROTTLED_EXCEPTION_WITH_CORRECT_REGEX = ThrottledException(
-    exception_class=TestThrottleError,
-    error_message_regexes=["test Exception"]
-)
-DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_REGEX = ThrottledException(
-    exception_class=TestThrottleError,
-    error_message_regexes=["wrong Exception message"]
-)
-DEFAULT_THROTTLED_EXCEPTION_WITH_MIXED_REGEX = ThrottledException(
-    exception_class=TestThrottleError,
-    error_message_regexes=["wrong Exception message", "test Exception"]
-)
-DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_EXC = ThrottledException(
-    exception_class=TypeError,
-    error_message_regexes=["test Exception"]
-)
+class UnSupportedThrottleError(BaseException):
+    """Simple error for unit test of unsupported Exceptions"""
 
 
 # time.sleep is being patched but not referenced.
-# pylint: disable=W0613
+# pylint: disable=W0613, invalid-name, line-too-long
 class ResourceHelperTests(TestCase):
     """Test Resource Helper"""
+
+    def setUp(self):
+        self.call_count = 0
 
     def mock_instance(self):
         """Create a mock Instance"""
@@ -130,283 +115,216 @@ class ResourceHelperTests(TestCase):
         self.assertRaises(ClientError, throttled_call, mock_func)
         self.assertEqual(1, mock_func.call_count)
 
-    def test_throttled_exception_init_good_param(self):
-        """Test ThrottledException, handles good params to __init__"""
+    @patch('time.sleep', return_value=None)
+    def test_throttled_call_on_exception_dec_none_param_func_no_exc(self, mock_sleep):
+        """Test throttled_call_on_exception, when decorator has None param, func has no exception."""
 
-        # test valid val for param exception_class, doesn't raise Exception
-        ThrottledException(exception_class=RuntimeError)
-        ThrottledException(exception_class=TestThrottleError)
+        expected_call_count = 1
 
-        # test valid val for param error_message_regexes, doesn't raise Exception
-        ThrottledException(exception_class=RuntimeError,
-                           error_message_regexes=None)
-        ThrottledException(exception_class=RuntimeError,
-                           error_message_regexes=[])
-        ThrottledException(exception_class=RuntimeError,
-                           error_message_regexes=["valid val"])
-        ThrottledException(exception_class=RuntimeError,
-                           error_message_regexes=("valid val", "another valid val"))
-        ThrottledException(exception_class=RuntimeError,
-                           error_message_regexes=set(["valid val", "another valid val"]))
+        def _reset():
+            self.call_count = 0
+            mock_sleep.reset_mock()
 
-    def test_throttled_exception_init_bad_param(self):
-        """Test ThrottledException, handles bad params to __init__"""
+        def _test_basic(func):
+            func()
+            self.assertEqual(expected_call_count, self.call_count)
+            mock_sleep.assert_not_called()
 
-        # test invalid val for param exception_class
-        self.assertRaises(TypeError, ThrottledException, exception_class=str)
-        self.assertRaises(TypeError, ThrottledException, exception_class=None)
+        # test default call to decorator
+        _reset()
 
-        # test invalid val for param error_message_regexes
-        self.assertRaises(TypeError, ThrottledException, exception_class=RuntimeError,
-                          error_message_regexes="invalid val")
-        self.assertRaises(TypeError, ThrottledException, exception_class=RuntimeError,
-                          error_message_regexes=RuntimeError("another invalid val"))
-        self.assertRaises(TypeError, ThrottledException, exception_class=RuntimeError,
-                          error_message_regexes=[RuntimeError("another invalid val")])
-        self.assertRaises(TypeError, ThrottledException, exception_class=RuntimeError,
-                          error_message_regexes=["valid str", RuntimeError("another invalid val")])
+        @throttled_call_on_exception()
+        def test_func1():
+            self.call_count += 1
 
-    def test_throttled_exception_matches_success(self):
-        """Test ThrottledException, handles successful call to matches"""
+        _test_basic(test_func1)
 
-        # test match when there's no error_message_regexes
-        texc = ThrottledException(exception_class=RuntimeError)
-        self.assertTrue(texc.matches(DEFAULT_TEST_THROTTLE_ERROR))
-        self.assertTrue(texc.matches(DEFAULT_RUNTIME_ERROR))
+        # test default call to decorator with no parentheses
+        _reset()
 
-        texc = ThrottledException(exception_class=RuntimeError,
-                                  error_message_regexes=[])
-        self.assertTrue(texc.matches(DEFAULT_TEST_THROTTLE_ERROR))
-        self.assertTrue(texc.matches(DEFAULT_RUNTIME_ERROR))
+        @throttled_call_on_exception
+        def test_func2():
+            self.call_count += 1
 
-        texc = ThrottledException(exception_class=RuntimeError,
-                                  error_message_regexes=None)
-        self.assertTrue(texc.matches(DEFAULT_TEST_THROTTLE_ERROR))
-        self.assertTrue(texc.matches(DEFAULT_RUNTIME_ERROR))
+        _test_basic(test_func2)
 
-        # test match when there's error_message_regexes
-        texc = ThrottledException(exception_class=RuntimeError,
-                                  error_message_regexes=["some val"])
-        self.assertTrue(texc.matches(RuntimeError("has 'some val' in message")))
+        # test call to decorator with positional arg of None (same as default)
+        _reset()
 
-        texc = ThrottledException(exception_class=RuntimeError,
-                                  error_message_regexes=["some val", "another val", "yet a final val"])
-        self.assertTrue(texc.matches(RuntimeError("has 'some val' in message")))
-        self.assertTrue(texc.matches(RuntimeError("has another val in message")))
-        self.assertTrue(texc.matches(RuntimeError("has yet a final val in message")))
-        self.assertTrue(texc.matches(TestThrottleError("subclass of RuntimeError and has some val")))
+        @throttled_call_on_exception(None)
+        def test_func3():
+            self.call_count += 1
 
-        texc = ThrottledException(exception_class=RuntimeError,
-                                  error_message_regexes=["some .* message"])
-        self.assertTrue(texc.matches(RuntimeError("has 'some val' in message")))
+        _test_basic(test_func3)
 
-        texc = ThrottledException(exception_class=RuntimeError,
-                                  error_message_regexes=["some .* message",
-                                                         "another .* message",
-                                                         "yet a final .* message"]
-                                  )
-        self.assertTrue(texc.matches(RuntimeError("has 'some val' in message")))
-        self.assertTrue(texc.matches(RuntimeError("has another val in message")))
-        self.assertTrue(texc.matches(RuntimeError("has yet a final val in message")))
-        self.assertTrue(texc.matches(TestThrottleError("subclass of RuntimeError, has some val in message")))
+        # test call to decorator with kwarg of None (same as default)
+        _reset()
 
-    def test_throttled_exception_matches_fail(self):
-        """Test ThrottledException, handles failed call to matches"""
+        @throttled_call_on_exception(is_throttled_exception=None)
+        def test_func4():
+            self.call_count += 1
 
-        # test there's no match when there's no error_message_regexes
-        texc = ThrottledException(exception_class=RuntimeError)
-        # some bogus inputs
-        self.assertFalse(texc.matches(None))
-        self.assertFalse(texc.matches(""))
-        self.assertFalse(texc.matches(1))
-        # not a subclass of RuntimeError
-        self.assertFalse(texc.matches(SystemError("has some val for err message")))
+        _test_basic(test_func4)
 
-        # test there's no match when there's error_message_regexes
-        texc = ThrottledException(exception_class=RuntimeError,
-                                  error_message_regexes=["some val"])
-        # not a subclass of RuntimeError
-        self.assertFalse(texc.matches(SystemError("has some val for err message")))
-        # no matching error message
-        self.assertFalse(texc.matches(RuntimeError("has no matching err message")))
+        # test default call to decorator with args to function
+        _reset()
+        expected_return_value = 12
 
-        texc = ThrottledException(exception_class=RuntimeError,
-                                  error_message_regexes=["some .* message"])
-        self.assertFalse(texc.matches(RuntimeError("has 'wrong val' in message that doesn't match regex")))
+        @throttled_call_on_exception()
+        def test_func5(arg1, arg2, arg3):
+            self.call_count += 1
+            return arg1 + arg2 + arg3
 
-        texc = ThrottledException(exception_class=RuntimeError,
-                                  error_message_regexes=["some .* message",
-                                                         "another .* message",
-                                                         "yet a final .* message"])
-        self.assertFalse(texc.matches(RuntimeError("has 'wrong val' in message")))
-        self.assertFalse(texc.matches(RuntimeError("has another val in mssg")))
-        self.assertFalse(texc.matches(RuntimeError("has yet a wrong final val in message")))
-        self.assertFalse(texc.matches(TestThrottleError("subclass of RuntimeError, wrong val in message")))
+        actual_return_value = test_func5(7, arg3=2, arg2=3)
+        self.assertEqual(expected_return_value, actual_return_value)
+        self.assertEqual(expected_call_count, self.call_count)
+        mock_sleep.assert_not_called()
 
     @patch('time.sleep', return_value=None)
-    # pylint: disable=invalid-name
-    def test_throttled_call_with_exceptions_handled_exception(self, mock_sleep):
+    def test_throttled_call_on_exception_dec_none_param_func_exc_throttles(self, mock_sleep):
         """
-        Test throttled_call_with_exceptions, throttles and doesn't raise Exception, when function raises
-        Exception
+        Test throttled_call_on_exception, when decorator has None param, func has exception, throttles
+        and executes
         """
 
-        te_with_correct_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_CORRECT_REGEX
-        te_with_wrong_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_REGEX
-        te_with_mixed_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_MIXED_REGEX
-        te_with_wrong_exc = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_EXC
+        expected_call_count = 3
 
-        throttled_excs_test_cases = [
-            [te_with_correct_regex],
-            [te_with_mixed_regex],
-            [te_with_mixed_regex, te_with_wrong_regex],
-            [te_with_wrong_regex, te_with_correct_regex],
-            [te_with_wrong_exc, te_with_correct_regex],
-            [te_with_wrong_exc, te_with_mixed_regex],
-            [te_with_wrong_exc, te_with_mixed_regex, te_with_wrong_exc, te_with_correct_regex]
-        ]
+        self.call_count = 0
+        mock_sleep.reset_mock()
 
-        for throttled_excs in throttled_excs_test_cases:
-            mock_func = MagicMock()
-            mock_error = DEFAULT_TEST_THROTTLE_ERROR
-            mock_func.side_effect = [mock_error, mock_error, True]
+        @throttled_call_on_exception
+        def test_func():
+            self.call_count += 1
+            if self.call_count < 3:
+                raise SupportedThrottleError("this is some bogus error message for testing")
 
-            throttled_call_with_exceptions(fun=mock_func, throttled_exceptions=throttled_excs)
-            self.assertEqual(3, mock_func.call_count)
+        test_func()
+        self.assertEqual(expected_call_count, self.call_count)
+        self.assertEqual(expected_call_count - 1, mock_sleep.call_count)
 
     @patch('time.sleep', return_value=None)
-    # pylint: disable=invalid-name
-    def test_throttled_call_with_exceptions_handled_exception_with_timeout(self, mock_sleep):
+    def test_throttled_call_on_exception_dec_none_param_func_exc_timeout(self, mock_sleep):
         """
-        Test throttled_call_with_exceptions, throttles and eventually raises, when func raises handled
-        Exception
+        Test throttled_call_on_exception, when decorator has None param, func has exception, times out
+        and raise exception
         """
 
-        te_with_correct_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_CORRECT_REGEX
-        te_with_wrong_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_REGEX
-        te_with_mixed_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_MIXED_REGEX
-        te_with_wrong_exc = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_EXC
+        self.call_count = 0
+        mock_sleep.reset_mock()
 
-        throttled_excs_test_cases = [
-            [te_with_correct_regex],
-            [te_with_mixed_regex],
-            [te_with_mixed_regex, te_with_wrong_regex],
-            [te_with_wrong_regex, te_with_correct_regex],
-            [te_with_wrong_exc, te_with_correct_regex],
-            [te_with_wrong_exc, te_with_mixed_regex],
-            [te_with_wrong_exc, te_with_mixed_regex, te_with_wrong_exc, te_with_correct_regex]
-        ]
+        @throttled_call_on_exception
+        def test_func():
+            self.call_count += 1
+            raise SupportedThrottleError("exception type doesn't matter b/c everything is throttled")
 
-        for throttled_excs in throttled_excs_test_cases:
-            mock_func = MagicMock()
-            mock_error = DEFAULT_TEST_THROTTLE_ERROR
-            mock_func.side_effect = mock_error
-
-            self.assertRaises(TestThrottleError, throttled_call_with_exceptions, mock_func, throttled_excs)
-
-            # it's impossible to predict the exact number of call counts (throttles) before a timeout
-            # b/c of the random nature of Jitter.backoff() in throttled_call_with_exceptions.
-            # But it's safe to assume, based on current Jitter default configuration and usage, that even
-            # in the most extreme case the call count (throttle) will be at least 5 before a timeout.
-            self.assertTrue(mock_func.call_count >= 5)
+        self.assertRaises(SupportedThrottleError, test_func)
+        # it's impossible to predict the exact number of call counts (throttles) before a timeout
+        # b/c of the random nature of Jitter.backoff() in throttled_call_on_exceptions.
+        # But it's safe to assume, based on current Jitter default configuration and usage, that even
+        # in the most extreme case the call count (throttle) will be at least 5 before a timeout.
+        self.assertGreaterEqual(self.call_count, 5)
+        self.assertGreaterEqual(mock_sleep.call_count, 4)
+        self.assertEqual(self.call_count - 1, mock_sleep.call_count)
 
     @patch('time.sleep', return_value=None)
-    # pylint: disable=invalid-name
-    def test_throttled_call_with_exceptions_unhandled_exception_with_raise(self, mock_sleep):
-        """
-        Test throttled_call_with_exceptions, no throttle and immediately raises, when func raises unhandled
-        Exception
-        """
+    def test_throttled_call_on_exception_dec_param_func_no_exc(self, mock_sleep):
+        """Test throttled_call_on_exception, when decorator has param, func has no exception"""
 
-        te_with_wrong_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_REGEX
-        te_with_wrong_exc = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_EXC
+        expected_call_count = 1
 
-        throttled_excs_test_cases = [
-            None,
-            [],
-            [te_with_wrong_regex],
-            [te_with_wrong_exc],
-            [te_with_wrong_regex, te_with_wrong_regex],
-            [te_with_wrong_exc, te_with_wrong_regex]
-        ]
+        self.call_count = 0
+        mock_sleep.reset_mock()
 
-        for throttled_excs in throttled_excs_test_cases:
-            mock_func = MagicMock()
-            mock_error = DEFAULT_TEST_THROTTLE_ERROR
-            mock_func.side_effect = mock_error
+        def dont_throttle_exception(err):
+            return False
 
-            self.assertRaises(TestThrottleError, throttled_call_with_exceptions, mock_func, throttled_excs)
-            self.assertEqual(1, mock_func.call_count)
+        @throttled_call_on_exception(is_throttled_exception=dont_throttle_exception)
+        def test_func():
+            self.call_count += 1
+
+        test_func()
+        self.assertEqual(expected_call_count, self.call_count)
+        mock_sleep.assert_not_called()
 
     @patch('time.sleep', return_value=None)
-    # pylint: disable=invalid-name
-    def test_throttled_call_with_exceptions_no_exception(self, mock_sleep):
-        """Test throttled_call_with_exceptions, doesn't throttle, when function doesn't raise Exception"""
+    def test_throttled_call_on_exception_dec_param_func_exc_throttles(self, mock_sleep):
+        """
+        Test throttled_call_on_exception, when decorator has param, func has exception, throttles
+        and executes
+        """
 
-        te_with_correct_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_CORRECT_REGEX
-        te_with_wrong_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_REGEX
-        te_with_mixed_regex = DEFAULT_THROTTLED_EXCEPTION_WITH_MIXED_REGEX
-        te_with_wrong_exc = DEFAULT_THROTTLED_EXCEPTION_WITH_WRONG_EXC
+        expected_call_count = 3
 
-        throttled_excs_test_cases = [
-            None,
-            [],
-            [te_with_wrong_regex],
-            [te_with_wrong_exc],
-            [te_with_correct_regex],
-            [te_with_mixed_regex],
-            [te_with_mixed_regex, te_with_wrong_regex],
-            [te_with_wrong_regex, te_with_correct_regex],
-            [te_with_wrong_exc, te_with_correct_regex],
-            [te_with_wrong_exc, te_with_mixed_regex],
-            [te_with_wrong_exc, te_with_mixed_regex, te_with_wrong_exc, te_with_correct_regex]
-        ]
+        self.call_count = 0
+        mock_sleep.reset_mock()
 
-        for throttled_excs in throttled_excs_test_cases:
-            mock_func = MagicMock()
+        def throttle_some_exception(err):
+            if issubclass(err.__class__, SupportedThrottleError) and "some bogus error" in str(err):
+                return True
+            return False
 
-            throttled_call_with_exceptions(fun=mock_func, throttled_exceptions=throttled_excs)
-            self.assertEqual(1, mock_func.call_count)
+        @throttled_call_on_exception(is_throttled_exception=throttle_some_exception)
+        def test_func():
+            self.call_count += 1
+            if self.call_count < 3:
+                raise SupportedThrottleError("this is some bogus error message for testing")
+
+        test_func()
+        self.assertEqual(expected_call_count, self.call_count)
+        self.assertEqual(expected_call_count - 1, mock_sleep.call_count)
 
     @patch('time.sleep', return_value=None)
-    # pylint: disable=invalid-name
-    def test_throttled_call_with_exceptions_bad_param(self, mock_sleep):
-        """Test throttled_call_with_exceptions, handles bad param"""
+    def test_throttled_call_on_exception_dec_param_func_exc_timeout(self, mock_sleep):
+        """
+        Test throttled_call_on_exception, when decorator has param, func has exception, times out
+        and raise exception
+        """
 
-        valid_te = DEFAULT_THROTTLED_EXCEPTION_WITH_CORRECT_REGEX
+        self.call_count = 0
+        mock_sleep.reset_mock()
 
-        throttled_excs_test_cases = [
-            RuntimeError("invalid type b/c it needs to be an iterable"),
-            123,
-            "another invalid type b/c it needs to be an iterable",
-            valid_te,
-            [""],
-            [None],
-            [-1],
-            [0],
-            [123],
-            [valid_te, ""],
-            [valid_te, RuntimeError("invalid obj")],
-            [2, valid_te],
-            [valid_te, 3, valid_te],
-            [valid_te, valid_te, None],
-            [valid_te, 4, valid_te, None, valid_te, "yet another invalid obj"]
-        ]
+        def throttle_some_exception(err):
+            if issubclass(err.__class__, SupportedThrottleError) and "some bogus error" in str(err):
+                return True
+            return False
 
-        for throttled_excs in throttled_excs_test_cases:
-            # test when function doesn't raise Exception
-            mock_func = MagicMock()
+        @throttled_call_on_exception(is_throttled_exception=throttle_some_exception)
+        def test_func():
+            self.call_count += 1
+            raise SupportedThrottleError("this is some bogus error message for testing")
 
-            self.assertRaises(TypeError, throttled_call_with_exceptions, mock_func, throttled_excs)
-            self.assertEqual(0, mock_func.call_count)
+        self.assertRaises(SupportedThrottleError, test_func)
+        # it's impossible to predict the exact number of call counts (throttles) before a timeout
+        # b/c of the random nature of Jitter.backoff() in throttled_call_on_exceptions.
+        # But it's safe to assume, based on current Jitter default configuration and usage, that even
+        # in the most extreme case the call count (throttle) will be at least 5 before a timeout.
+        self.assertGreaterEqual(self.call_count, 5)
+        self.assertGreaterEqual(mock_sleep.call_count, 4)
+        self.assertEqual(self.call_count - 1, mock_sleep.call_count)
 
-            # test when function raises Exception
-            mock_func = MagicMock()
-            mock_error = DEFAULT_TEST_THROTTLE_ERROR
-            mock_func.side_effect = mock_error
+    @patch('time.sleep', return_value=None)
+    def test_throttled_call_on_exception_dec_param_func_exc_raises(self, mock_sleep):
+        """
+        Test throttled_call_on_exception, when decorator has param, func has exception, immediately raises
+        b/c exception doesn't meet throttle criteria
+        """
 
-            self.assertRaises(TypeError, throttled_call_with_exceptions, mock_func, throttled_excs)
-            self.assertEqual(0, mock_func.call_count)
+        expected_call_count = 1
+
+        self.call_count = 0
+        mock_sleep.reset_mock()
+
+        def throttle_some_exception(err):
+            return issubclass(err.__class__, SupportedThrottleError)
+
+        @throttled_call_on_exception(is_throttled_exception=throttle_some_exception)
+        def test_func():
+            self.call_count += 1
+            raise UnSupportedThrottleError("an unsupported exception for testing")
+
+        self.assertRaises(UnSupportedThrottleError, test_func)
+        self.assertEqual(expected_call_count, self.call_count)
+        mock_sleep.assert_not_called()
 
     @patch('boto3.resource')
     @patch('time.sleep', return_value=None)
