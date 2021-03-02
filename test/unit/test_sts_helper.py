@@ -21,6 +21,15 @@ class TestSTSHelper(TestCase):
             RoleSessionName='AssumedRole'
         )
 
+    def test_assume_role_with_session_name(self):
+        """test getting credentials by assuming a role in a account with a session name"""
+        self.sts_helper.assume_role("1234", "fake-role", "fake-session-name")
+
+        self.sts_client.assume_role.assert_called_once_with(
+            RoleArn='arn:aws:iam::1234:role/fake-role',
+            RoleSessionName='fake-session-name',
+        )
+
     def test_get_boto3_client(self):
         """test getting a boto3 client with an assumed role"""
         self.sts_client.assume_role.return_value = {
