@@ -160,7 +160,7 @@ class SpotinstClient:
         except (ConnectionError, Timeout) as err:
             raise SpotinstRateExceededException(
                 "Rate exceeded while calling %s %s: %s" % (method, path, err)
-            )
+            ) from err
 
         if response.status_code == 401:
             raise SpotinstApiException("Provided Spotinst API token is not valid")
@@ -170,8 +170,10 @@ class SpotinstClient:
 
         try:
             ret = response.json()
-        except ValueError:
-            raise SpotinstApiException("Spotinst API did not return JSON response: %s" % response.text)
+        except ValueError as err:
+            raise SpotinstApiException(
+                "Spotinst API did not return JSON response: %s" % response.text
+            ) from err
 
         if response.status_code != 200:
             status = ret['response']['status']
