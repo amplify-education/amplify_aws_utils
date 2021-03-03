@@ -23,7 +23,7 @@ jobs:
       python: 3.6
       script:
         - bash bin/versionCheck.sh $TRAVIS_BRANCH $TRAVIS_PULL_REQUEST
-        - pip install tox pre-commit
+        - pip install --upgrade tox pre-commit pip
         - pre-commit run --verbose --all-files
         - tox -e lint
       after_success: skip
