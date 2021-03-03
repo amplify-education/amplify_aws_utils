@@ -5,14 +5,8 @@ python:
   - 3.7
   - 3.8
 
-addons:
-  homebrew:
-    packages:
-    - openssl@1.1
-    - rust
-
 install:
-  - pip install tox-travis codacy-coverage
+  - pip install --upgrade tox-travis codacy-coverage pip
 script:
   - tox
 after_success:
@@ -29,7 +23,7 @@ jobs:
       python: 3.6
       script:
         - bash bin/versionCheck.sh $TRAVIS_BRANCH $TRAVIS_PULL_REQUEST
-        - pip install --upgrade tox pre-commit pip
+        - pip install tox pre-commit
         - pre-commit run --verbose --all-files
         - tox -e lint
       after_success: skip
