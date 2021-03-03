@@ -3,13 +3,10 @@
 import hashlib
 import random
 import string
-from unittest.mock import MagicMock
-
 from io import BytesIO
-
-import unittest
-from unittest import TestCase
 from typing import Dict, Set
+from unittest import TestCase
+from unittest.mock import MagicMock
 from urllib.parse import urlencode
 
 import boto3
@@ -51,7 +48,8 @@ class TestS3Helper(TestCase):
         TEST_BUCKET_TAGS["foo"] = "bar"
 
         client.create_bucket(
-            Bucket=TEST_BUCKET_NAME
+            Bucket=TEST_BUCKET_NAME,
+            CreateBucketConfiguration={"LocationConstraint": "us-moon-1"},
         )
 
         client.put_bucket_versioning(
@@ -97,7 +95,6 @@ class TestS3Helper(TestCase):
             }
         )
 
-    @unittest.skip("Disabled because moto doesn't completely implement 'list_object_versions'")
     def test_list_objects(self):
         """Test that we can list objects"""
         items = self.helper.list_objects(
@@ -107,7 +104,6 @@ class TestS3Helper(TestCase):
 
         self.assertEqual(TEST_OBJECT_KEYS, {item["Key"] for item in items})
 
-    @unittest.skip("Disabled because moto doesn't completely implement 'list_object_versions'")
     def test_list_versions(self):
         """Test that we can list versions of objects"""
         versions = self.helper.list_versions(
@@ -118,7 +114,6 @@ class TestS3Helper(TestCase):
         self.assertEqual(TEST_OBJECT_KEYS, {item["Key"] for item in versions})
         self.assertEqual(len(TEST_OBJECT_KEYS) + 9, len(versions))
 
-    @unittest.skip("Disabled because moto doesn't completely implement 'list_object_versions'")
     def test_list_versions_no_duplicates(self):
         """Test that we can list versions of an object with only one version"""
         versions = self.helper.list_versions(
@@ -129,7 +124,6 @@ class TestS3Helper(TestCase):
         self.assertEqual({TEST_OBJECT_KEY_NO_DUPLICATES}, {item["Key"] for item in versions})
         self.assertEqual(1, len(versions))
 
-    @unittest.skip("Disabled because moto doesn't completely implement 'list_object_versions'")
     def test_list_versions_with_duplicates(self):
         """Test that we can list versions of an object with multiple versions"""
         versions = self.helper.list_versions(

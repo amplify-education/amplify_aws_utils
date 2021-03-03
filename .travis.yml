@@ -1,3 +1,4 @@
+dist: bionic
 sudo: true
 language: python
 python:
@@ -6,7 +7,7 @@ python:
   - 3.8
 
 install:
-  - pip install tox-travis codacy-coverage
+  - pip install --upgrade tox-travis codacy-coverage pip
 script:
   - tox
 after_success:
