@@ -225,10 +225,16 @@ def get_boto3_paged_results(
     if not response_items:
         logger.warning("No items found in response=%s", response)
 
-    while response.get(next_token_key):
-        kwargs[next_request_token_key] = response[next_token_key]
+    next_token = response.get(next_token_key)
+    prev_token = None
+
+    # Apparently sometimes the next token can be repeated back to you, and that means stop making requests
+    while next_token and next_token != prev_token:
+        kwargs[next_request_token_key] = next_token
         response = throttled_call(func, *args, **kwargs)
         response_items += response[results_key]
+        prev_token = next_token
+        next_token = response.get(next_token_key)
 
     return response_items
 
