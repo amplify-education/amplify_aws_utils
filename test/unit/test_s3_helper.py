@@ -21,7 +21,7 @@ TEST_BUCKET_NAME = "test-bucket-name"
 TEST_OBJECT_PREFIX = "".join(random.choices(string.ascii_uppercase + string.digits, k=20))
 TEST_OBJECT_BODY = "".join(random.choices(string.ascii_uppercase + string.digits, k=4000))
 TEST_OBJECT_KEY_DUPLICATES = f"{TEST_OBJECT_PREFIX}/multiple_versions"
-TEST_OBJECT_KEY_NO_DUPLICATES = "TEST_OBJECT_PREFIX/single_version"
+TEST_OBJECT_KEY_NO_DUPLICATES = f"{TEST_OBJECT_PREFIX}/single_version"
 TEST_OBJECT_KEYS: Set[str] = set()
 TEST_OBJECT_TAGS: Dict[str, str] = {"foo": "bar", "cat": "dog"}
 TEST_BUCKET_TAGS: Dict[str, str] = {}
