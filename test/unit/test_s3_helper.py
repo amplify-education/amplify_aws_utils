@@ -20,8 +20,8 @@ from amplify_aws_utils.resource_helper import boto3_tags_to_dict, dict_to_boto3_
 TEST_BUCKET_NAME = "test-bucket-name"
 TEST_OBJECT_PREFIX = "".join(random.choices(string.ascii_uppercase + string.digits, k=20))
 TEST_OBJECT_BODY = "".join(random.choices(string.ascii_uppercase + string.digits, k=4000))
-TEST_OBJECT_KEY_DUPLICATES = "%s/%s" % (TEST_OBJECT_PREFIX, "multiple_versions")
-TEST_OBJECT_KEY_NO_DUPLICATES = "%s/%s" % (TEST_OBJECT_PREFIX, "single_version")
+TEST_OBJECT_KEY_DUPLICATES = f"{TEST_OBJECT_PREFIX}/multiple_versions"
+TEST_OBJECT_KEY_NO_DUPLICATES = "TEST_OBJECT_PREFIX/single_version"
 TEST_OBJECT_KEYS: Set[str] = set()
 TEST_OBJECT_TAGS: Dict[str, str] = {"foo": "bar", "cat": "dog"}
 TEST_BUCKET_TAGS: Dict[str, str] = {}
@@ -62,10 +62,8 @@ class TestS3Helper(TestCase):
 
         # pylint: disable=unused-variable
         for i in range(10):
-            key = "%s/%s" % (
-                TEST_OBJECT_PREFIX,
-                "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
-            )
+            identifier = "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+            key = f"{TEST_OBJECT_PREFIX}/{identifier}"
             client.put_object(
                 Bucket=TEST_BUCKET_NAME,
                 Key=key,

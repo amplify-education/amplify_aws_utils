@@ -128,7 +128,9 @@ def wait_for_state(resource, state, timeout=15 * 60, state_attr='state'):
             pass  # These are most likely transient, we will timeout if they are not
 
         if time_passed >= timeout:
-            raise TimeoutError(f"Timed out waiting for {resource} to change state to {state} after {time_passed}s.")
+            raise TimeoutError(
+                f"Timed out waiting for {resource} to change state to {state} after {time_passed}s."
+            )
 
         time_passed = jitter.backoff()
 

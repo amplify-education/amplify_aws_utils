@@ -143,7 +143,7 @@ class SpotinstClient:
         :rtype: dict
         """
         try:
-            params = params or dict()
+            params = params or {}
             params['accountId'] = self.account_id
 
             response = requests.request(
