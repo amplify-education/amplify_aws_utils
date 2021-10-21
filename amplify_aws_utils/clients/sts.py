@@ -24,7 +24,7 @@ class STS:
         :return: A dictionary of the credentials.
         """
         assumed_role_object = self.sts_client.assume_role(
-            RoleArn='arn:aws:iam::%s:role/%s' % (account_id, role_name),
+            RoleArn=f'arn:aws:iam::{account_id}:role/{role_name}',
             RoleSessionName=role_session_name or 'AssumedRole',
         )
 
