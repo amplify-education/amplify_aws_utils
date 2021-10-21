@@ -120,17 +120,17 @@ def wait_for_state(resource, state, timeout=15 * 60, state_attr='state'):
             current_state = getattr(resource, state_attr)
             if current_state == state:
                 return
-            elif current_state in (u'failed', u'terminated'):
+            elif current_state in ('failed', 'terminated'):
                 raise ExpectedTimeoutError(
-                    "{0} entered state {1} after {2}s waiting for state {3}"
-                    .format(resource, current_state, time_passed, state))
+                    f"{resource} entered state {current_state} after {time_passed}s waiting for state {state}"
+                )
         except (EC2ResponseError, BotoServerError):
             pass  # These are most likely transient, we will timeout if they are not
 
         if time_passed >= timeout:
             raise TimeoutError(
-                "Timed out waiting for {0} to change state to {1} after {2}s."
-                .format(resource, state, time_passed))
+                f"Timed out waiting for {resource} to change state to {state} after {time_passed}s."
+            )
 
         time_passed = jitter.backoff()
 
@@ -149,7 +149,7 @@ def wait_for_state_boto3(describe_func, params_dict, resources_name,
             all_good = True
             failure = False
             for resource in resources:
-                if resource[state_attr] in (u'failed', u'terminated'):
+                if resource[state_attr] in ('failed', 'terminated'):
                     failure = True
                     all_good = False
                 elif resource[state_attr] != expected_state:
@@ -159,17 +159,18 @@ def wait_for_state_boto3(describe_func, params_dict, resources_name,
                 return
             elif failure:
                 raise ExpectedTimeoutError(
-                    "At least some resources who meet the following description entered either "
-                    "'failed' or 'terminated' state after {0}s waiting for state {1}:\n{2}"
-                    .format(time_passed, expected_state, params_dict))
+                    "At least some resources who meet the following description "
+                    "entered either 'failed' or 'terminated' state "
+                    f"after {time_passed}s waiting for state {expected_state}:\n{params_dict}"
+                )
         except (EC2ResponseError, ClientError):
             pass  # These are most likely transient, we will timeout if they are not
 
         if time_passed >= timeout:
             raise TimeoutError(
                 "Timed out waiting for resources who meet the following description to change "
-                "state to {0} after {1}s:\n{2}"
-                .format(expected_state, time_passed, params_dict))
+                f"state to {expected_state} after {time_passed}s:\n{params_dict}"
+            )
 
         time_passed = jitter.backoff()
 
@@ -184,13 +185,12 @@ def wait_for_sshable(remotecmd, instance, timeout=15 * 60, quiet=False):
 
     if not quiet:
         logger.info("Waiting for instance %s to be fully provisioned.", instance.id)
-    wait_for_state(instance, u'running', timeout)
+    wait_for_state(instance, 'running', timeout)
     if not quiet:
         logger.info("Instance %s running (booting up).", instance.id)
 
     while True:
-        logger.debug(
-            "Waiting for %s to become sshable.", instance.id)
+        logger.debug("Waiting for %s to become sshable.", instance.id)
         if remotecmd(instance, ['true'], nothrow=True)[0] == 0:
             logger.info("Instance %s now SSHable.", instance.id)
             logger.debug("Waited %s seconds for instance to boot", time_passed)
@@ -199,9 +199,7 @@ def wait_for_sshable(remotecmd, instance, timeout=15 * 60, quiet=False):
             break
         time_passed = jitter.backoff()
 
-    raise TimeoutError(
-        "Timed out waiting for instance {0} to become sshable after {1}s."
-        .format(instance, timeout))
+    raise TimeoutError(f"Timed out waiting for instance {instance} to become sshable after {timeout}s.")
 
 
 def get_boto3_paged_results(
@@ -245,9 +243,7 @@ def check_written_s3(object_name, expected_written_length, written_length):
     Raise error if any problem happens so we can diagnose the causes
     """
     if expected_written_length != written_length:
-        raise S3WritingError(
-            "{0} is not written correctly to S3 bucket".format(object_name)
-        )
+        raise S3WritingError(f"{object_name} is not written correctly to S3 bucket")
 
 
 def get_ssm_parameters(names: Sequence[str]) -> Dict[str, str]:

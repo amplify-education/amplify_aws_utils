@@ -11,7 +11,7 @@ class TestS3URI(TestCase):
         """S3URI happy path"""
         bucket = "MOCK_BUCKET"
         key = "MOCK_KEY"
-        uri = "s3://%s/%s" % (bucket, key)
+        uri = f"s3://{bucket}/{key}"
 
         s3_uri = S3URI(uri=uri)
 
@@ -32,7 +32,7 @@ class TestS3URI(TestCase):
         """S3URI with query component"""
         bucket = "MOCK_BUCKET"
         key = "MOCK_KEY?MOCK_QUERY=BAR"
-        uri = "s3://%s/%s" % (bucket, key)
+        uri = f"s3://{bucket}/{key}"
 
         s3_uri = S3URI(uri=uri)
 
@@ -53,7 +53,7 @@ class TestS3URI(TestCase):
         """S3URI with hash character"""
         bucket = "MOCK_BUCKET"
         key = "MOCK_KEY#MOCK_HASH"
-        uri = "s3://%s/%s" % (bucket, key)
+        uri = f"s3://{bucket}/{key}"
 
         s3_uri = S3URI(uri=uri)
 

@@ -35,7 +35,7 @@ class SpotinstClient:
         :param str group_id: Id of group to update
         :param dict group_config: New group config
         """
-        self._make_throttled_request(path='aws/ec2/group/%s' % group_id, data=group_config, method='put')
+        self._make_throttled_request(path=f'aws/ec2/group/{group_id}', data=group_config, method='put')
 
     def get_group(self, group_id: str) -> Dict[str, Any]:
         """
@@ -44,7 +44,7 @@ class SpotinstClient:
         :return: List of instances in a Elastigroup
         :rtype: list[dict]
         """
-        response = self._make_throttled_request(path='aws/ec2/group/%s' % group_id, method='get')
+        response = self._make_throttled_request(path=f'aws/ec2/group/{group_id}', method='get')
         return response['response']['items'][0]
 
     def get_instances_in_group(self, group_id: str):
@@ -54,7 +54,7 @@ class SpotinstClient:
         :return: List of instances in a Elastigroup
         :rtype: list[dict]
         """
-        response = self._make_throttled_request(path='aws/ec2/group/%s' % group_id + '/status', method='get')
+        response = self._make_throttled_request(path=f'aws/ec2/group/{group_id}' + '/status', method='get')
         return response['response']['items']
 
     def get_groups(self) -> List[Dict[str, Any]]:
@@ -70,7 +70,7 @@ class SpotinstClient:
         Delete an Elastigroup
         :param str group_id: Id of group to delete
         """
-        self._make_throttled_request(path='aws/ec2/group/%s' % group_id, method='delete')
+        self._make_throttled_request(path=f'aws/ec2/group/{group_id}', method='delete')
 
     def roll_group(self, group_id: str, batch_percentage: int, grace_period: int, health_check_type: str):
         """
@@ -89,7 +89,7 @@ class SpotinstClient:
                 "action": "REPLACE_SERVER"
             }
         }
-        self._make_throttled_request(path='aws/ec2/group/%s/roll' % group_id, data=request, method='put')
+        self._make_throttled_request(path=f'aws/ec2/group/{group_id}/roll', data=request, method='put')
 
     def get_deployments(self, group_id: str) -> List[Dict[str, Any]]:
         """
@@ -97,7 +97,7 @@ class SpotinstClient:
         :param str group_id:
         :return list[dict]:
         """
-        response = self._make_throttled_request(path='aws/ec2/group/%s/roll' % group_id, method='get')
+        response = self._make_throttled_request(path=f'aws/ec2/group/{group_id}/roll', method='get')
         deploys = response['response']['items']
         return sorted(deploys, key=lambda deploy: deploy['createdAt'])
 
@@ -109,7 +109,7 @@ class SpotinstClient:
         :return dict:
         """
         response = self._make_throttled_request(
-            path='aws/ec2/group/%s/roll/%s' % (group_id, deploy_id),
+            path=f'aws/ec2/group/{group_id}/roll/{deploy_id}',
             method='get'
         )
         return response['response']['items'][0]
@@ -121,7 +121,7 @@ class SpotinstClient:
         :return dict:
         """
         response = self._make_throttled_request(
-            path='aws/ec2/group/%s/instanceHealthiness' % group_id,
+            path=f'aws/ec2/group/{group_id}/instanceHealthiness',
             method='get'
         )
         return response['response']['items']
@@ -143,36 +143,36 @@ class SpotinstClient:
         :rtype: dict
         """
         try:
-            params = params or dict()
+            params = params or {}
             params['accountId'] = self.account_id
 
             response = requests.request(
                 method=method,
-                url='%s/%s' % (SPOTINST_API_HOST, path),
+                url=f'{SPOTINST_API_HOST}/{path}',
                 params=params,
                 json=data,
                 headers={
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer %s" % self.token
+                    "Authorization": f"Bearer {self.token}"
                 },
                 timeout=60
             )
         except (ConnectionError, Timeout) as err:
             raise SpotinstRateExceededException(
-                "Rate exceeded while calling %s %s: %s" % (method, path, err)
+                f"Rate exceeded while calling {method} {path}: {err}"
             ) from err
 
         if response.status_code == 401:
             raise SpotinstApiException("Provided Spotinst API token is not valid")
 
         if response.status_code == 429:
-            raise SpotinstRateExceededException("Rate exceeded while calling %s %s" % (method, path))
+            raise SpotinstRateExceededException(f"Rate exceeded while calling {method} {path}")
 
         try:
             ret = response.json()
         except ValueError as err:
             raise SpotinstApiException(
-                "Spotinst API did not return JSON response: %s" % response.text
+                f"Spotinst API did not return JSON response: {response.text}"
             ) from err
 
         if response.status_code != 200:
@@ -182,10 +182,10 @@ class SpotinstClient:
 
             for error in errors:
                 if error.get('code') in ("Throttling", "RequestLimitExceeded"):
-                    raise SpotinstRateExceededException("Rate exceeded while calling %s %s" % (method, path))
+                    raise SpotinstRateExceededException(f"Rate exceeded while calling {method} {path}")
 
             raise SpotinstApiException(
-                "Unknown Spotinst API error encountered: %s %s. RequestId %s" % (status, errors, req_id)
+                f"Unknown Spotinst API error encountered: {status} {errors}. RequestId {req_id}"
             )
 
         return ret
