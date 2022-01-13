@@ -17,3 +17,7 @@ class ExpectedTimeoutError(TimeoutError):
 
 class S3WritingError(RuntimeError):
     """S3 object is not written correctly"""
+
+
+class CatchAllExceptionError(RuntimeError):
+    """Error raised when handling catch all exceptions for an app/service"""
