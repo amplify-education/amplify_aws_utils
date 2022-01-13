@@ -2,14 +2,18 @@
 This module has utility functions for working with aws resources
 """
 import logging
-from typing import Dict, List, Sequence, Callable
+import traceback
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 import boto3
+from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from boto.exception import EC2ResponseError, BotoServerError
 from botocore.exceptions import ClientError, WaiterError, ReadTimeoutError
 
 from amplify_aws_utils.jitter import Jitter
 from .exceptions import (
+    CatchAllExceptionError,
     TimeoutError,
     ExpectedTimeoutError,
     S3WritingError
@@ -366,3 +370,82 @@ def dynamodb_record_to_dict(record: Dict[str, Dict[str, str]]) -> Dict[str, str]
         key: list(value.values())[0]
         for key, value in record.items()
     }
+
+
+# pylint: disable=invalid-name
+@lambda_handler_decorator
+def catchall_exception_lambda_handler_decorator(
+        handler: Callable,
+        event: Dict[str, Any],
+        context: LambdaContext,
+        log_exception: Optional[bool] = True,
+        raise_exception: Optional[bool] = True
+) -> Union[Dict[str, Any], None]:
+    """
+    Decorator to handle uncaught exceptions for a lambda handler.
+
+    The lambda handler function being decorated must have the signature `handler(event, context)`.
+
+    This decorator will catch all uncaught exceptions from the decorated lambda handler function,
+    then manage it. There will be a particular focus on the exception chaining info of the
+    exception because by default it will be lost forever when the exception propagates out of the
+    lambda function. The exception can be handled as follows:
+
+        - optionally log the caught exception, including the exception chaining info, before the
+          exception propagates out of the lambda function.
+
+        - optionally raise new `CatchAllExceptionError` exception instance, with the error message
+          portion set with the caught exception's exception chaining info.
+
+    Note that setting both *log_exception* and *raise_exception* to True, the default, will
+    probably result in the exception being logged twice by your log service. It will first be
+    explicitly logged by this decorator when *log_exception* is True. Then, when *raise_exception*
+    is True, and the exception propagates out of the lambda function, your log service will
+    probably log it.
+
+    Example usage:
+
+        @catchall_exception_lambda_handler_decorator
+        def lambda_handler(event, context):
+            return True
+
+        @catchall_exception_lambda_handler_decorator(log_exception=False)
+        def lambda_handler(event, context):
+            return True
+
+        @catchall_exception_lambda_handler_decorator(raise_exception=False)
+        def lambda_handler(event, context):
+            return True
+
+        @catchall_exception_lambda_handler_decorator(log_exception=False, raise_exception=False)
+        def lambda_handler(event, context):
+            return True
+
+    :param handler: The lambda function's main handler
+    :param event: The incoming lambda event
+    :param context: The incoming lambda context
+    :param log_exception: Defaults to True. If True, will log the caught exception, including the
+    exception chaining.
+    :param raise_exception: Defaults to True. If True, will raise a new CatchAllExceptionError with
+    the error message portion set with the exception chaining info from the caught exception.
+    :return: The response of the lambda handler
+    """
+    try:
+        return handler(event, context)
+    except Exception as exc:
+        if log_exception:
+            # log stack trace info, including exception chaining
+            logger.exception("Catchall exception logging")
+
+        if raise_exception:
+            err_mssg = repr(exc)
+            stack_trace = traceback.format_exc()
+
+            # a bit kludgy to put the stack trace info into the error message portion of the
+            # exception, but necessary to retain the exception chaining info b/c exception
+            # chaining will be lost once an exception propagates out of a lambda function
+            raise CatchAllExceptionError(
+                f"Catchall exception. err_mssg: {err_mssg}, stack_trace: {stack_trace}"
+            ) from exc
+
+    return None

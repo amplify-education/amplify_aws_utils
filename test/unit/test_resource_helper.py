@@ -9,21 +9,29 @@ from boto.exception import EC2ResponseError
 import boto.ec2.instance
 from botocore.exceptions import ClientError, WaiterError
 
-from amplify_aws_utils.exceptions import ExpectedTimeoutError
-from amplify_aws_utils.exceptions import TimeoutError
+from amplify_aws_utils.exceptions import (
+    CatchAllExceptionError,
+    ExpectedTimeoutError,
+    TimeoutError,
+)
 from amplify_aws_utils.resource_helper import (
     Jitter,
+    catchall_exception_lambda_handler_decorator,
+    dynamodb_record_to_dict,
     keep_trying,
     throttled_call,
+    wait_for_sshable,
     wait_for_state,
     wait_for_state_boto3,
-    wait_for_sshable,
-    dynamodb_record_to_dict,
 )
 
 
+class MockError(Exception):
+    """Exception for testing"""
+
+
 # time.sleep is being patched but not referenced.
-# pylint: disable=W0613
+# pylint: disable=unused-argument
 class ResourceHelperTests(TestCase):
     """Test Resource Helper"""
 
@@ -245,3 +253,104 @@ class ResourceHelperTests(TestCase):
             expected,
             actual,
         )
+
+
+# aws_lambda_powertools.middleware_factory.factory.logger is being patched but not referenced.
+# pylint: disable=unused-argument,no-value-for-parameter
+class CatchallExceptionLambdaHandlerDecoratorTests(TestCase):
+    """Test amplify_aws_utils.resource_helper.catchall_exception_lambda_handler_decorator()"""
+
+    # pylint: disable=assignment-from-no-return
+    @patch("aws_lambda_powertools.middleware_factory.factory.logger")
+    @patch("amplify_aws_utils.resource_helper.logger")
+    def test_no_raise_exception(self, mock_logger, mock_aws_lambda_powertools_logger):
+        """Tests catchall_exception_lambda_handler_decorator, doesn't raise exception, does log exception"""
+        @catchall_exception_lambda_handler_decorator(raise_exception=False)
+        def _lambda_handler(*_):
+            raise MockError("some exception")
+
+        actual_response = _lambda_handler({}, MagicMock)
+
+        mock_logger.exception.assert_called_once_with("Catchall exception logging")
+        self.assertEqual(
+            actual_response,
+            None
+        )
+
+    @patch("aws_lambda_powertools.middleware_factory.factory.logger")
+    @patch("amplify_aws_utils.resource_helper.logger")
+    def test_no_log_exception(self, mock_logger, mock_aws_lambda_powertools_logger):
+        """Tests catchall_exception_lambda_handler_decorator, doesn't log exception, does raise exception"""
+        @catchall_exception_lambda_handler_decorator(log_exception=False)
+        def _lambda_handler(*_):
+            raise MockError("some exception")
+
+        with self.assertRaises(CatchAllExceptionError) as context:
+            _lambda_handler({}, MagicMock)
+
+        self.assertRegex(str(context.exception), "some exception")
+        mock_logger.exception.assert_not_called()
+
+    @patch("aws_lambda_powertools.middleware_factory.factory.logger")
+    @patch("amplify_aws_utils.resource_helper.logger")
+    def test_no_raise_no_log_exception(self, mock_logger, mock_aws_lambda_powertools_logger):
+        """
+        Tests catchall_exception_lambda_handler_decorator, doesn't raise exception, doesn't log exception
+        """
+        @catchall_exception_lambda_handler_decorator(log_exception=False, raise_exception=False)
+        def _lambda_handler(*_):
+            raise MockError("some exception")
+
+        actual_response = _lambda_handler({}, MagicMock)
+
+        mock_logger.exception.assert_not_called()
+        self.assertEqual(
+            actual_response,
+            None
+        )
+
+    @patch("aws_lambda_powertools.middleware_factory.factory.logger")
+    @patch("amplify_aws_utils.resource_helper.logger")
+    def test_exception_chaining_in_err_mssg(self, mock_logger, mock_aws_lambda_powertools_logger):
+        """
+        Tests catchall_exception_lambda_handler_decorator correctly retains exception chaining
+        in exception error message
+        """
+        def _some_func():
+            raise MockError("some exception 1")
+
+        @catchall_exception_lambda_handler_decorator
+        def _lambda_handler(*_):
+            try:
+                _some_func()
+            except Exception as exc:
+                raise MockError("some exception 2") from exc
+
+        with self.assertRaises(CatchAllExceptionError) as context:
+            _lambda_handler({}, MagicMock)
+
+        self.assertRegex(str(context.exception), "some exception 1")
+        self.assertRegex(str(context.exception), "some exception 2")
+
+        mock_logger.exception.assert_called_once_with("Catchall exception logging")
+
+    @patch("amplify_aws_utils.resource_helper.logger")
+    def test_wrap_response(self, mock_logger):
+        """Tests catchall_exception_lambda_handler_decorator correctly wraps the response"""
+        mock_response = {
+            "foo": "bar",
+            1: 2,
+        }
+
+        @catchall_exception_lambda_handler_decorator
+        def _lambda_handler(*_):
+            return mock_response
+
+        actual_response = _lambda_handler({}, MagicMock())
+
+        self.assertEqual(
+            actual_response,
+            mock_response
+        )
+
+        mock_logger.exception.assert_not_called()
