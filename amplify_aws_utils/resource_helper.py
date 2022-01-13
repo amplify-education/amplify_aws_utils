@@ -3,7 +3,7 @@ This module has utility functions for working with aws resources
 """
 import logging
 import traceback
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 import boto3
 from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
@@ -372,6 +372,7 @@ def dynamodb_record_to_dict(record: Dict[str, Dict[str, str]]) -> Dict[str, str]
     }
 
 
+# pylint: disable=invalid-name
 @lambda_handler_decorator
 def catchall_exception_lambda_handler_decorator(
         handler: Callable,
@@ -379,7 +380,7 @@ def catchall_exception_lambda_handler_decorator(
         context: LambdaContext,
         log_exception: Optional[bool] = True,
         raise_exception: Optional[bool] = True
-):
+) -> Union[Dict[str, Any], None]:
     """
     Decorator to handle uncaught exceptions for a lambda handler.
 
@@ -446,3 +447,5 @@ def catchall_exception_lambda_handler_decorator(
             raise CatchAllExceptionError(
                 f"Catchall exception. err_mssg: {err_mssg}, stack_trace: {stack_trace}"
             ) from exc
+
+    return None
