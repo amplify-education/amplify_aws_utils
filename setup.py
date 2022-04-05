@@ -41,7 +41,7 @@ def get_requirements():
 
 setup(
     name='amplify_aws_utils',
-    python_requires='>=3.6.0',
+    python_requires='>=3.7.0',
     version=get_version(),
     description="Utility functions for working with AWS resources",
     long_description=get_long_description(),
@@ -50,9 +50,9 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9'
     ],
     keywords='',
     author='Amplify Education',

@@ -12,7 +12,4 @@ nose-cov>=1.5,<2
 mock>=1.0.1,<2
 requests-mock>=1.7.0,<2
 coverage>=4.5.3,<5
-# need version 2.3.2.dev2, or higher, to address compatibility issue with `responses` package
-# https://github.com/spulec/moto/issues/4750
-# https://github.com/spulec/moto/pull/4749
-moto[all]>=2.3.2.dev2,<3
+moto[all]>=3.1.4,<4
