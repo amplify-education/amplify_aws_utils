@@ -1,9 +1,0 @@
-apiVersion: backstage.io/v1alpha1
-kind: Component
-metadata:
-  name: amplify_aws_utils
-  annotations:
-    github.com/project-slug: amplify-education/amplify_aws_utils
-spec:
-  type: other
-  lifecycle: unknown
