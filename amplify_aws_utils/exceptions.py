@@ -3,6 +3,7 @@ Container for amplify_aws_utils exceptions
 """
 
 
+# pylint: disable=redefined-builtin
 class TimeoutError(RuntimeError):
     """Error raised on timeout"""
 

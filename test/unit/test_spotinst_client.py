@@ -4,6 +4,7 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 import requests_mock
+# pylint: disable=redefined-builtin
 from requests.exceptions import ReadTimeout, ConnectTimeout, ConnectionError
 
 from amplify_aws_utils.clients.spotinst import SpotinstClient, SpotinstRateExceededException

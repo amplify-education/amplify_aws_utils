@@ -37,7 +37,7 @@ class TestS3Helper(TestCase):
         self.helper = S3(client)
 
     def tearDown(self):
-        requests.post("http://motoapi.amazonaws.com/moto-api/reset")
+        requests.post("http://motoapi.amazonaws.com/moto-api/reset", timeout=10)
         TEST_OBJECT_KEYS.clear()
         TEST_BUCKET_TAGS.clear()
 
