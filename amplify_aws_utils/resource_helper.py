@@ -12,6 +12,7 @@ from boto.exception import EC2ResponseError, BotoServerError
 from botocore.exceptions import ClientError, WaiterError, ReadTimeoutError
 
 from amplify_aws_utils.jitter import Jitter
+# pylint: disable=redefined-builtin
 from .exceptions import (
     CatchAllExceptionError,
     TimeoutError,
@@ -98,7 +99,12 @@ def throttled_call(fun, *args, **kwargs):
             error_code = err.response['Error'].get('Code', 'Unknown')
             is_throttle_exception = any(
                 key_word in error_code
-                for key_word in ("Throttling", "RequestLimitExceeded", "TooManyRequestsException")
+                for key_word in (
+                    "Throttling",
+                    "RequestLimitExceeded",
+                    "TooManyRequestsException",
+                    "ServiceUnavailable",
+                )
             )
 
             if not is_throttle_exception or time_passed > max_time:
@@ -206,6 +212,7 @@ def wait_for_sshable(remotecmd, instance, timeout=15 * 60, quiet=False):
     raise TimeoutError(f"Timed out waiting for instance {instance} to become sshable after {timeout}s.")
 
 
+# pylint: disable=keyword-arg-before-vararg
 def get_boto3_paged_results(
         func: Callable,
         results_key: str,

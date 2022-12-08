@@ -9,6 +9,7 @@ from boto.exception import EC2ResponseError
 import boto.ec2.instance
 from botocore.exceptions import ClientError, WaiterError
 
+# pylint: disable=redefined-builtin
 from amplify_aws_utils.exceptions import (
     CatchAllExceptionError,
     ExpectedTimeoutError,
