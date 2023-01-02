@@ -7,9 +7,6 @@
 # pygtk.require().
 #init-hook=
 
-# Profiled execution.
-# profile=no
-
 # Add <file or directory> to the black list. It should be a base name, not a
 # path. You may set this option multiple times.
 ignore=CVS
@@ -36,7 +33,6 @@ load-plugins=
 #    F0401: *Unable to import %r*
 #    E0611: *No name %r in module %r*
 #    E1101: *%s %r has no %r member*
-#    W0142: *Used * or ** magic*
 #    W0212: *Access to a protected member %s of a client class*
 #    w0703: Allow catching Exception
 #    R0801:  1: Similar lines in 2 files, badamson: had trouble disabling this locally
@@ -50,19 +46,7 @@ load-plugins=
 # W0511: TODO - we want to have TODOs during prototyping
 # E1103: %s %r has no %r member (but some types could not be inferred) - fails to infer real members of types, e.g. in Celery
 # W0231: method from base class is not called - complains about not invoking empty __init__s in parents, which is annoying
-# R0921: abstract class not referenced, when in fact referenced from another egg
-disable=
-    protected-access,
-    fixme,
-    F0401,
-    E0611,
-    E1101,
-    W0212,
-    W0703,
-    R0801,
-    R0901,
-    E1103,
-    W0231
+disable=F0401,E0611,E1101,W0212,W0703,R0801,R0901,W0511,E1103,W0231
 
 
 [REPORTS]
@@ -70,14 +54,6 @@ disable=
 # Set the output format. Available formats are text, parseable, colorized, msvs
 # (visual studio) and html
 output-format=colorized
-
-# Include message's id in output
-# include-ids=yes
-
-# Put messages in a separate file for each module / package specified on the
-# command line instead of printing them on stdout. Reports (if any) will be
-# written in a file name "pylint_global.[txt|html]".
-# files-output=no
 
 # Tells whether to display a full report or only the messages
 reports=no
@@ -89,19 +65,8 @@ reports=no
 # (R0004).
 evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
 
-# Add a comment according to your evaluation note. This is used by the global
-# evaluation report (R0004).
-# comment=no
-
 
 [BASIC]
-
-# Required attributes for module, separated by a comma
-# required-attributes=
-
-# List of builtins function names that should not be used, separated by a comma
-# Amplify: Allowing the use of 'map' and 'filter'
-# bad-functions=apply,input
 
 # Regular expression which should only match correct module names
 module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
@@ -160,9 +125,6 @@ max-module-lines=1000
 # tab).
 indent-string='    '
 
-# Ignore a long line if its just a URL
-ignore-long-lines=^\s*(# )?<?https?://\S+>?$
-
 
 [MISCELLANEOUS]
 
@@ -192,10 +154,6 @@ ignore-mixin-members=yes
 # (useful for classes with attributes dynamically set).
 ignored-classes=SQLObject
 
-# When zope mode is activated, add a predefined set of Zope acquired attributes
-# to generated-members.
-# zope=no
-
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E0201 when accessed.
 generated-members=REQUEST,acl_users,aq_parent
@@ -216,10 +174,6 @@ additional-builtins=
 
 [CLASSES]
 
-# List of interface methods to ignore, separated by a comma. This is used for
-# instance to not check methods defines in Zope's Interface base class.
-# ignore-iface-methods=isImplementedBy,deferred,extends,names,namesAndDescriptions,queryDescriptionFor,getBases,getDescriptionFor,getDoc,getName,getTaggedValue,getTaggedValueTags,isEqualOrExtendedBy,setTaggedValue,isImplementedByInstancesOf,adaptWith,is_implemented_by
-
 # List of method names used to declare (i.e. assign) instance attributes.
 defining-attr-methods=__init__,__new__,setUp
 
@@ -227,7 +181,7 @@ defining-attr-methods=__init__,__new__,setUp
 [DESIGN]
 
 # Maximum number of arguments for function / method
-max-args=12
+max-args=10
 
 # Argument names that match this expression will be ignored. Default to name
 # with leading underscore
@@ -239,9 +193,6 @@ max-locals=15
 # Maximum number of return / yield for function / method body
 max-returns=6
 
-# Maximum number of branch for function / method body
-# max-branchs=12
-
 # Maximum number of statements in function / method body
 max-statements=50
 
@@ -249,7 +200,7 @@ max-statements=50
 max-parents=7
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=16
+max-attributes=14
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=0

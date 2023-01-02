@@ -7,10 +7,13 @@ import re
 import os.path
 
 
-VERSION_REGEX = re.compile(r"""
+VERSION_REGEX = re.compile(
+    r"""
     ^__version__\s=\s
     ['"](?P<version>.*?)['"]
-""", re.MULTILINE | re.VERBOSE)
+""",
+    re.MULTILINE | re.VERBOSE,
+)
 
 VERSION_FILE = os.path.join("amplify_aws_utils", "version.py")
 
@@ -18,7 +21,7 @@ VERSION_FILE = os.path.join("amplify_aws_utils", "version.py")
 def get_long_description():
     """Reads the long description from the README"""
     this_directory = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as file:
+    with open(os.path.join(this_directory, "README.md"), encoding="utf-8") as file:
         return file.read()
 
 
@@ -36,32 +39,36 @@ def get_version():
 def get_requirements():
     """Reads the installation requirements from requirements.pip"""
     with open("requirements.pip") as reqfile:
-        return [line for line in reqfile.read().split("\n") if not line.startswith(('#', '-'))]
+        return [
+            line
+            for line in reqfile.read().split("\n")
+            if not line.startswith(("#", "-"))
+        ]
 
 
 setup(
-    name='amplify_aws_utils',
-    python_requires='>=3.7.0',
+    name="amplify_aws_utils",
+    python_requires=">=3.7.0",
     version=get_version(),
     description="Utility functions for working with AWS resources",
     long_description=get_long_description(),
     # Get strings from http://www.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9'
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
-    keywords='',
-    author='Amplify Education',
-    author_email='astronauts.core@amplify.com',
-    url='https://github.com/amplify-education/amplify_aws_utils/',
-    license='MIT',
+    keywords="",
+    author="Amplify Education",
+    author_email="astronauts.core@amplify.com",
+    url="https://github.com/amplify-education/amplify_aws_utils/",
+    license="MIT",
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
     install_requires=get_requirements(),
-    test_suite='nose.collector'
+    test_suite="nose.collector",
 )

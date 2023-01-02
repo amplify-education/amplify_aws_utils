@@ -5,11 +5,16 @@ import hashlib
 import logging
 from typing import Dict, Any, Sequence, IO
 
-import botostubs
 from botocore.exceptions import ClientError
 
-from amplify_aws_utils.resource_helper import get_boto3_paged_results, throttled_call, dict_to_boto3_tags, \
-    boto3_tags_to_dict
+from mypy_boto3_s3.client import S3Client
+
+from amplify_aws_utils.resource_helper import (
+    get_boto3_paged_results,
+    throttled_call,
+    dict_to_boto3_tags,
+    boto3_tags_to_dict,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +24,13 @@ class S3:
     A simple class for managing interaction with the S3 API
     """
 
-    def __init__(self, s3: botostubs.S3):
+    def __init__(self, s3: S3Client):
         # pylint: disable=invalid-name
         self.s3 = s3
 
-    def list_objects(self, bucket: str, prefix: str, **kwargs) -> Sequence[Dict[str, Any]]:
+    def list_objects(
+        self, bucket: str, prefix: str, **kwargs
+    ) -> Sequence[Dict[str, Any]]:
         """
         Convenience function for listing objects in an S3 bucket with paging handled.
         :param bucket: Name of the bucket.
@@ -41,7 +48,9 @@ class S3:
 
         return results
 
-    def list_versions(self, bucket: str, prefix: str, **kwargs) -> Sequence[Dict[str, Any]]:
+    def list_versions(
+        self, bucket: str, prefix: str, **kwargs
+    ) -> Sequence[Dict[str, Any]]:
         """
         Convenience function for listing all the versions in an S3 bucket with paging handled.
         :param bucket: Name of the bucket.
@@ -71,24 +80,26 @@ class S3:
         :return: The contents of the object, read and decoded as utf-8.
         """
         if wait:
-            logger.info("Waiting for s3://%s/%s to exist with additional params: %s", bucket, key, kwargs)
-            waiter = self.s3.get_waiter('object_exists')
-            waiter.wait(
-                Bucket=bucket,
-                Key=key,
-                **kwargs
+            logger.info(
+                "Waiting for s3://%s/%s to exist with additional params: %s",
+                bucket,
+                key,
+                kwargs,
             )
+            waiter = self.s3.get_waiter("object_exists")
+            waiter.wait(Bucket=bucket, Key=key, **kwargs)
 
-        result = throttled_call(
-            self.s3.get_object,
-            Bucket=bucket,
-            Key=key,
-            **kwargs
-        )["Body"].read().decode("utf-8")
+        result = (
+            throttled_call(self.s3.get_object, Bucket=bucket, Key=key, **kwargs)["Body"]
+            .read()
+            .decode("utf-8")
+        )
 
         return result
 
-    def download_file(self, bucket: str, key: str, file_obj: IO, wait: bool = False, **kwargs):
+    def download_file(
+        self, bucket: str, key: str, file_obj: IO, wait: bool = False, **kwargs
+    ):
         """
         Convenience function for downloading an object out of S3.
         :param bucket: Name of the bucket.
@@ -98,13 +109,14 @@ class S3:
         :param kwargs: Any additional arguments to pass to the underlying boto call.
         """
         if wait:
-            logger.info("Waiting for s3://%s/%s to exist with additional params: %s", bucket, key, kwargs)
-            waiter = self.s3.get_waiter('object_exists')
-            waiter.wait(
-                Bucket=bucket,
-                Key=key,
-                **kwargs
+            logger.info(
+                "Waiting for s3://%s/%s to exist with additional params: %s",
+                bucket,
+                key,
+                kwargs,
             )
+            waiter = self.s3.get_waiter("object_exists")
+            waiter.wait(Bucket=bucket, Key=key, **kwargs)
 
         throttled_call(
             self.s3.download_fileobj,
@@ -122,13 +134,7 @@ class S3:
         :param body: The contents of the object.
         :param kwargs: Any additional arguments to pass to the underlying boto call.
         """
-        throttled_call(
-            self.s3.put_object,
-            Bucket=bucket,
-            Key=key,
-            Body=body,
-            **kwargs
-        )
+        throttled_call(self.s3.put_object, Bucket=bucket, Key=key, Body=body, **kwargs)
 
     def put_bucket_tags(self, bucket: str, tags: Dict, merge: bool = False):
         """
@@ -139,18 +145,14 @@ class S3:
         existing tags will be overwritten entirely.
         """
         if merge:
-            existing_tags = self.get_bucket_tags(
-                bucket=bucket
-            )
+            existing_tags = self.get_bucket_tags(bucket=bucket)
             existing_tags.update(tags)
             tags = existing_tags
 
         throttled_call(
             self.s3.put_bucket_tagging,
             Bucket=bucket,
-            Tagging={
-                'TagSet': dict_to_boto3_tags(tags)
-            },
+            Tagging={"TagSet": dict_to_boto3_tags(tags)},
         )
 
     def get_bucket_tags(self, bucket: str) -> Dict[str, str]:
@@ -160,14 +162,11 @@ class S3:
         :return: Dictionary representing the tags of the requested S3 bucket.
         """
         try:
-            result = throttled_call(
-                self.s3.get_bucket_tagging,
-                Bucket=bucket
-            )
+            result = throttled_call(self.s3.get_bucket_tagging, Bucket=bucket)
 
             return boto3_tags_to_dict(result["TagSet"])
         except ClientError:
-            logger.warning('Bucket %s has no tags', bucket)
+            logger.warning("Bucket %s has no tags", bucket)
             return {}
 
     def put_object_tags(self, bucket: str, key: str, tags: Dict, **kwargs):
@@ -182,9 +181,7 @@ class S3:
             self.s3.put_object_tagging,
             Bucket=bucket,
             Key=key,
-            Tagging={
-                "TagSet": dict_to_boto3_tags(tags)
-            },
+            Tagging={"TagSet": dict_to_boto3_tags(tags)},
             **kwargs
         )
 
@@ -197,10 +194,7 @@ class S3:
         :return: A dictionary representing the tags on the object.
         """
         boto_tags = throttled_call(
-            self.s3.get_object_tagging,
-            Bucket=bucket,
-            Key=key,
-            **kwargs
+            self.s3.get_object_tagging, Bucket=bucket, Key=key, **kwargs
         )
         return boto3_tags_to_dict(boto_tags["TagSet"])
 
@@ -212,12 +206,9 @@ class S3:
         :param kwargs: Any additional arguments to pass to the underlying boto call.
         :return: SHA256 hash of the object.
         """
-        stream = throttled_call(
-            self.s3.get_object,
-            Bucket=bucket,
-            Key=key,
-            **kwargs
-        )["Body"]
+        stream = throttled_call(self.s3.get_object, Bucket=bucket, Key=key, **kwargs)[
+            "Body"
+        ]
 
         # 5 megabytes
         block_size = 5242880
@@ -231,8 +222,14 @@ class S3:
 
         return hasher.hexdigest()
 
-    def copy_file(self, source_bucket: str, destination_bucket: str, source_key: str, destination_key: str,
-                  **kwargs):
+    def copy_file(
+        self,
+        source_bucket: str,
+        destination_bucket: str,
+        source_key: str,
+        destination_key: str,
+        **kwargs
+    ):
         """
         Convenience function for copying an S3 object from one bucket to another.
         :param source_bucket: Name of the source bucket.

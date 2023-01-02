@@ -9,6 +9,7 @@ class Jitter:
     The logic is based on the following article:
     https://www.awsarchitectureblog.com/2015/03/backoff.html
     """
+
     MAX_POLL_INTERVAL = 60  # seconds
 
     def __init__(self, min_wait: int = 3):
@@ -26,7 +27,9 @@ class Jitter:
             We chose to do this to make sure we continue to get random backoff values instead of
             constantly returning the max value once enough time has passed
         """
-        new_interval = randint(0, min(Jitter.MAX_POLL_INTERVAL, self._previous_interval * 3))
+        new_interval = randint(
+            0, min(Jitter.MAX_POLL_INTERVAL, self._previous_interval * 3)
+        )
         new_interval = max(self._min_wait, new_interval)
 
         time.sleep(new_interval)
