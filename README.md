@@ -1,4 +1,4 @@
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/9f6400386de74fe0b86acd6a081f3302)](https://www.codacy.com/app/amplify-education/amplify_aws_utils?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=amplify-education/amplify_aws_utils&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/9f6400386de74fe0b86acd6a081f3302)](https://www.codacy.com/app/amplify-education/amplify_aws_utils?utm_source=github.com&utm_medium=referral&utm_content=amplify-education/amplify_aws_utils&utm_campaign=Badge_Grade)
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/9f6400386de74fe0b86acd6a081f3302)](https://www.codacy.com/app/amplify-education/amplify_aws_utils?utm_source=github.com&utm_medium=referral&utm_content=amplify-education/amplify_aws_utils&utm_campaign=Badge_Coverage)
 [![Build Status](https://travis-ci.org/amplify-education/amplify_aws_utils.svg?branch=master)](https://travis-ci.org/amplify-education/amplify_aws_utils)
 [![PyPI](https://img.shields.io/pypi/v/amplify-aws-utils.svg)](https://pypi.org/project/amplify-aws-utils/)
@@ -17,18 +17,23 @@ company in education and the best education company in tech. While others try to
 technology, we use technology to expand what is possible in real classrooms with real students and teachers.
 
 ## Getting Started
+
 ### Prerequisites
+
 amplify_aws_utils requires the following to be installed:
+
 ```text
-python >= 3.6
+python >= 3.7
 ```
 
 ### Installation
+
 This package can be installed using `pip`
 
 `pip install amplify_aws_utils`
 
 ### Building From Source
+
 For development, `tox>=2.9.1` is recommended.
 
 Python package can be built as follows:
@@ -38,6 +43,7 @@ Python package can be built as follows:
 This creates a package in `dist` directory.
 
 ### Running Tests
+
 `amplify_aws_utils` uses `tox`. You will need to install tox with `pip install tox`.
 Running `tox` will automatically execute linters as well as the unit tests. You can also run them individually with
 the -e argument.
@@ -47,11 +53,13 @@ For example, `tox -e lint,py36-unit` will run the linters, and then the unit tes
 To see all the available options, run `tox -l`.
 
 ### Deployment
+
 Deployment is done with Travis.
 
 Package is built as described above, and is uploaded to PyPI repo using `devpi-client`
 
 ### Usage
+
 Functions provided by this package can be imported after package has been installed.
 
 Example:
