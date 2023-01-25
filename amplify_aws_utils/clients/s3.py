@@ -136,6 +136,15 @@ class S3:
         """
         throttled_call(self.s3.put_object, Bucket=bucket, Key=key, Body=body, **kwargs)
 
+    def delete_file(self, bucket: str, key: str, **kwargs):
+        """
+        Convenience function for deleting an object out of S3.
+        :param bucket: Name of the bucket.
+        :param key: Name of the key.
+        :param kwargs: Any additional arguments to pass to the underlying boto call.
+        """
+        throttled_call(self.s3.delete_object, Bucket=bucket, Key=key, **kwargs)
+
     def put_bucket_tags(self, bucket: str, tags: Dict, merge: bool = False):
         """
         Convenience function for tagging a bucket in S3.

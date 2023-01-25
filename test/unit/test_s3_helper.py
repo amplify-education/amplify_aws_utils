@@ -268,3 +268,17 @@ class TestS3Helper(TestCase):
         actual_tags = self.helper.get_bucket_tags(bucket=TEST_BUCKET_NAME)
 
         self.assertEqual(TEST_BUCKET_TAGS, actual_tags)
+
+    def test_delete_file(self):
+        """Test we can delete a bucket object"""
+        key_to_delete, *_ = random.sample(
+            TEST_OBJECT_KEYS.difference({TEST_OBJECT_KEY_DUPLICATES}), 1
+        )
+
+        self.helper.delete_file(TEST_BUCKET_NAME, key_to_delete)
+        TEST_OBJECT_KEYS.remove(key_to_delete)
+
+        items = self.helper.list_objects(
+            bucket=TEST_BUCKET_NAME, prefix=TEST_OBJECT_PREFIX
+        )
+        self.assertEqual(TEST_OBJECT_KEYS, {item["Key"] for item in items})
