@@ -254,3 +254,27 @@ class S3:
             CopySource={"Bucket": source_bucket, "Key": source_key},
             **kwargs
         )
+
+    def copy(
+            self,
+            source_bucket: str,
+            destination_bucket: str,
+            source_key: str,
+            destination_key: str,
+            **kwargs
+    ):
+        """
+        Convenience function for copying an S3 object from one bucket to another with multipart uplaod.
+        :param source_bucket: Name of the source bucket.
+        :param destination_bucket: Name of the destination bucket.
+        :param source_key: Name of the source object.
+        :param destination_key: Name of the destination object.
+        :param kwargs: Any additional arguments to pass to the underlying boto call.
+        """
+        throttled_call(
+            self.s3.copy,
+            Bucket=destination_bucket,
+            Key=destination_key,
+            CopySource={"Bucket": source_bucket, "Key": source_key},
+            **kwargs
+        )
