@@ -233,6 +233,29 @@ class TestS3Helper(TestCase):
 
         self.assertEqual(expected_body, actual_body)
 
+    def test_copy(self):
+        """Test that we can copy a file with multipart"""
+        source_key = "COPY_SOURCE"
+        destination_key = "COPY_DESTINATION"
+        expected_body = "COPY_SOME_BIG_FILE_BODY"
+
+        self.helper.write_file(
+            bucket=TEST_BUCKET_NAME, key=source_key, body=expected_body
+        )
+
+        self.helper.copy(
+            source_bucket=TEST_BUCKET_NAME,
+            destination_bucket=TEST_BUCKET_NAME,
+            source_key=source_key,
+            destination_key=destination_key,
+        )
+
+        actual_body = self.helper.read_file(
+            bucket=TEST_BUCKET_NAME, key=destination_key
+        )
+
+        self.assertEqual(expected_body, actual_body)
+
     def test_get_object_tags(self):
         """Test that we can get an object's tags"""
         actual_tags = self.helper.get_object_tags(
