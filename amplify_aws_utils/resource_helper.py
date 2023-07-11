@@ -354,7 +354,7 @@ def chunker(sequence, size):
     # [15, 16, 17, 18, 19]
     """
     return (
-        sequence[position : position + size]
+        sequence[position: position + size]
         for position in range(0, len(sequence), size)
     )
 
@@ -457,3 +457,14 @@ def catchall_exception_lambda_handler_decorator(
             ) from exc
 
     return None
+
+
+def to_bool(value: Any) -> bool:
+    """
+    Convert `value` to the lower string and compare with the list ["yes", "y", "true", "t", "on", "1"]
+    If in the list then `true` else `false`
+    """
+    if str(value).lower() in ["yes", "y", "true", "t", "on", "1"]:
+        return True
+
+    return False
