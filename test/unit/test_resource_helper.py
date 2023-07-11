@@ -24,6 +24,7 @@ from amplify_aws_utils.resource_helper import (
     wait_for_sshable,
     wait_for_state,
     wait_for_state_boto3,
+    to_bool,
 )
 
 
@@ -349,6 +350,25 @@ class ResourceHelperTests(TestCase):
             expected,
             actual,
         )
+
+    def test_to_bool(self):
+        """Test to_bool happy"""
+        # true values
+        self.assertEqual(to_bool("t"), True)
+        self.assertEqual(to_bool("true"), True)
+        self.assertEqual(to_bool("yes"), True)
+        self.assertEqual(to_bool("y"), True)
+        self.assertEqual(to_bool("on"), True)
+        self.assertEqual(to_bool("1"), True)
+        self.assertEqual(to_bool(1), True)
+        # false values
+        self.assertEqual(to_bool("0"), False)
+        self.assertEqual(to_bool(0), False)
+        self.assertEqual(to_bool(None), False)
+        self.assertEqual(to_bool("any"), False)
+        self.assertEqual(to_bool("n"), False)
+        self.assertEqual(to_bool(False), False)
+        self.assertEqual(to_bool("False"), False)
 
 
 # aws_lambda_powertools.middleware_factory.factory.logger is being patched but not referenced.
