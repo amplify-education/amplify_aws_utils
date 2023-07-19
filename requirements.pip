@@ -1,0 +1,12 @@
+# Place dependencies in this file, following the distutils format:
+# http://docs.python.org/2/distutils/setupscript.html#relationships-between-distributions-and-packages
+aws-lambda-powertools>=1.11.0,<2
+boto>=2.49.0, <3
+boto3>=1.24.96,<2
+boto3-stubs[s3]>=1.24.96,<2
+boto3-stubs[sts]>=1.24.96,<2
+boto3-stubs[ec2]>=1.24.96,<2
+boto3-stubs[config]>=1.24.96,<2
+boto3-stubs[ssm]>=1.24.96,<2
+requests>=2.26.0,<3
+mypy_boto3_ssm>=1.26.77,<2
