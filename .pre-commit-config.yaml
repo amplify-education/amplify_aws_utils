@@ -40,7 +40,7 @@ repos:
           - types-requests==0.1.13
   - repo: local
     hooks:
-      - id: pylint, --width, '120'
+      - id: pylint
         name: pylint (Python Linting)
         entry: pylint
         language: system
