@@ -19,7 +19,7 @@ repos:
     rev: 0.2.2 # or specific tag
     hooks:
       - id: yamlfmt
-        args: [--mapping, '2', --sequence, '4', --offset, '2']
+        args: [--mapping, '2', --sequence, '4', --offset, '2', --width, '120']
   - repo: https://github.com/executablebooks/mdformat.git
     rev: 0.7.16
     hooks:
@@ -31,7 +31,7 @@ repos:
       - id: black
         language_version: python3.8
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.981    # Use the sha / tag you want to point at
+    rev: v0.991    # Use the sha / tag you want to point at
     hooks:
       - id: mypy
         # You can use additional_dependencies to install types- packages
@@ -40,7 +40,7 @@ repos:
           - types-requests==0.1.13
   - repo: local
     hooks:
-      - id: pylint
+      - id: pylint, --width, '120'
         name: pylint (Python Linting)
         entry: pylint
         language: system
