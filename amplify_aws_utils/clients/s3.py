@@ -5,9 +5,9 @@ import hashlib
 import logging
 from typing import Dict, Any, Sequence, IO
 
-from mypy_boto3_s3 import S3Client
-
 from botocore.exceptions import ClientError
+
+from mypy_boto3_s3.client import S3Client
 
 from amplify_aws_utils.resource_helper import (
     get_boto3_paged_results,
@@ -136,6 +136,15 @@ class S3:
         """
         throttled_call(self.s3.put_object, Bucket=bucket, Key=key, Body=body, **kwargs)
 
+    def delete_file(self, bucket: str, key: str, **kwargs):
+        """
+        Convenience function for deleting an object out of S3.
+        :param bucket: Name of the bucket.
+        :param key: Name of the key.
+        :param kwargs: Any additional arguments to pass to the underlying boto call.
+        """
+        throttled_call(self.s3.delete_object, Bucket=bucket, Key=key, **kwargs)
+
     def put_bucket_tags(self, bucket: str, tags: Dict, merge: bool = False):
         """
         Convenience function for tagging a bucket in S3.
@@ -240,6 +249,30 @@ class S3:
         """
         throttled_call(
             self.s3.copy_object,
+            Bucket=destination_bucket,
+            Key=destination_key,
+            CopySource={"Bucket": source_bucket, "Key": source_key},
+            **kwargs
+        )
+
+    def copy(
+        self,
+        source_bucket: str,
+        destination_bucket: str,
+        source_key: str,
+        destination_key: str,
+        **kwargs
+    ):
+        """
+        Convenience function for copying an S3 object from one bucket to another with multipart uplaod.
+        :param source_bucket: Name of the source bucket.
+        :param destination_bucket: Name of the destination bucket.
+        :param source_key: Name of the source object.
+        :param destination_key: Name of the destination object.
+        :param kwargs: Any additional arguments to pass to the underlying boto call.
+        """
+        throttled_call(
+            self.s3.copy,
             Bucket=destination_bucket,
             Key=destination_key,
             CopySource={"Bucket": source_bucket, "Key": source_key},

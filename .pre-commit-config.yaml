@@ -45,5 +45,5 @@ repos:
         entry: pylint
         language: system
         types: [python]
-        files: ^(asiakker|test)/
+        files: ^(amplify_aws_utils|test)/
         args: [--rcfile=pylintrc, --output-format=colorized, --score=no]

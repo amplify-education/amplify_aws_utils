@@ -45,7 +45,8 @@ class TestS3Helper(TestCase):
         TEST_BUCKET_TAGS.clear()
         self.mock_s3.stop()
 
-    def setup_environment(self, client):
+    @staticmethod
+    def setup_environment(client):
         """Convenience function for setting up the S3 environment"""
         TEST_OBJECT_KEYS.add(TEST_OBJECT_KEY_DUPLICATES)
         TEST_OBJECT_KEYS.add(TEST_OBJECT_KEY_NO_DUPLICATES)
@@ -233,6 +234,29 @@ class TestS3Helper(TestCase):
 
         self.assertEqual(expected_body, actual_body)
 
+    def test_copy(self):
+        """Test that we can copy a file with multipart"""
+        source_key = "COPY_SOURCE"
+        destination_key = "COPY_DESTINATION"
+        expected_body = "COPY_SOME_BIG_FILE_BODY"
+
+        self.helper.write_file(
+            bucket=TEST_BUCKET_NAME, key=source_key, body=expected_body
+        )
+
+        self.helper.copy(
+            source_bucket=TEST_BUCKET_NAME,
+            destination_bucket=TEST_BUCKET_NAME,
+            source_key=source_key,
+            destination_key=destination_key,
+        )
+
+        actual_body = self.helper.read_file(
+            bucket=TEST_BUCKET_NAME, key=destination_key
+        )
+
+        self.assertEqual(expected_body, actual_body)
+
     def test_get_object_tags(self):
         """Test that we can get an object's tags"""
         actual_tags = self.helper.get_object_tags(
@@ -268,3 +292,17 @@ class TestS3Helper(TestCase):
         actual_tags = self.helper.get_bucket_tags(bucket=TEST_BUCKET_NAME)
 
         self.assertEqual(TEST_BUCKET_TAGS, actual_tags)
+
+    def test_delete_file(self):
+        """Test we can delete a bucket object"""
+        key_to_delete, *_ = random.sample(
+            TEST_OBJECT_KEYS.difference({TEST_OBJECT_KEY_DUPLICATES}), 1
+        )
+
+        self.helper.delete_file(TEST_BUCKET_NAME, key_to_delete)
+        TEST_OBJECT_KEYS.remove(key_to_delete)
+
+        items = self.helper.list_objects(
+            bucket=TEST_BUCKET_NAME, prefix=TEST_OBJECT_PREFIX
+        )
+        self.assertEqual(TEST_OBJECT_KEYS, {item["Key"] for item in items})

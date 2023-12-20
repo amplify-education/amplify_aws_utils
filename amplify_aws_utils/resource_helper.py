@@ -150,7 +150,7 @@ def wait_for_state_boto3(
 
             if all_good:
                 return
-            elif failure:
+            if failure:
                 raise ExpectedTimeoutError(
                     "At least some resources who meet the following description "
                     "entered either 'failed' or 'terminated' state "
@@ -388,3 +388,14 @@ def catchall_exception_lambda_handler_decorator(
             ) from exc
 
     return None
+
+
+def to_bool(value: Any) -> bool:
+    """
+    Convert `value` to the lower string and compare with the list ["yes", "y", "true", "t", "on", "1"]
+    If in the list then `true` else `false`
+    """
+    if str(value).lower() in ["yes", "y", "true", "t", "on", "1"]:
+        return True
+
+    return False

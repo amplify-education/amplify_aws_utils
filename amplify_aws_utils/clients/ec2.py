@@ -3,7 +3,7 @@ import logging
 from typing import List, Dict, Any, Set
 from datetime import datetime
 
-from mypy_boto3_ec2 import EC2Client
+from mypy_boto3_ec2.client import EC2Client
 
 from amplify_aws_utils.resource_helper import (
     get_boto3_paged_results,

@@ -23,7 +23,7 @@ technology, we use technology to expand what is possible in real classrooms with
 amplify_aws_utils requires the following to be installed:
 
 ```text
-python >= 3.6
+python >= 3.7
 ```
 
 ### Installation

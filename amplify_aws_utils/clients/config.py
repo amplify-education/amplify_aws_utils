@@ -2,7 +2,7 @@
 import logging
 from typing import List, Dict
 
-from mypy_boto3_config import ConfigServiceClient
+from mypy_boto3_config.client import ConfigServiceClient
 
 from amplify_aws_utils.resource_helper import throttled_call, chunker
 

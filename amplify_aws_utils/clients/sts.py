@@ -1,8 +1,10 @@
 """Utilities for assuming AWS roles"""
-from typing import Dict, Any, Optional
+from typing import Any, Optional
 
 import boto3
-from mypy_boto3_sts import STSClient
+from mypy_boto3_sts.client import STSClient
+from mypy_boto3_sts.type_defs import CredentialsTypeDef
+from mypy_boto3_sts.literals import ServiceName
 
 
 class STS:
@@ -13,7 +15,7 @@ class STS:
 
     def assume_role(
         self, account_id: str, role_name: str, role_session_name: Optional[str] = None
-    ) -> Dict[str, str]:
+    ) -> CredentialsTypeDef:
         """
         Assumes a role and returns its credentials.
         :param account_id: The id of the account to assume the role in.
@@ -32,7 +34,7 @@ class STS:
         self,
         account_id: str,
         role_name: str,
-        client_name: str,
+        client_name: ServiceName,
         role_session_name: Optional[str] = None,
         **kwargs,
     ) -> Any:
