@@ -52,6 +52,7 @@ setup(
     version=get_version(),
     description="Utility functions for working with AWS resources",
     long_description=get_long_description(),
+    long_description_content_type="text/markdown",
     # Get strings from http://www.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         "Topic :: Software Development :: Libraries :: Python Modules",
@@ -59,8 +60,8 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10"
-        "Programming Language :: Python :: 3.11"
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
     ],
     keywords="",
