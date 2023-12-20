@@ -37,7 +37,7 @@ repos:
         # You can use additional_dependencies to install types- packages
         # https://github.com/pre-commit/mirrors-mypy
         additional_dependencies:
-          - types-requests==0.1.13
+          - types-requests==2.31.0
   - repo: local
     hooks:
       - id: pylint

@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 from urllib.parse import urlencode
 
 import boto3
-from mypy_boto3_s3 import S3Client
+from mypy_boto3_s3.client import S3Client
 from moto import mock_s3
 
 from amplify_aws_utils.clients.s3 import S3
@@ -296,7 +296,7 @@ class TestS3Helper(TestCase):
     def test_delete_file(self):
         """Test we can delete a bucket object"""
         key_to_delete, *_ = random.sample(
-            TEST_OBJECT_KEYS.difference({TEST_OBJECT_KEY_DUPLICATES}), 1
+            list(TEST_OBJECT_KEYS.difference({TEST_OBJECT_KEY_DUPLICATES})), 1
         )
 
         self.helper.delete_file(TEST_BUCKET_NAME, key_to_delete)
