@@ -8,16 +8,16 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 import boto3
 from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
 from aws_lambda_powertools.utilities.typing import LambdaContext
-from boto.exception import EC2ResponseError, BotoServerError
 from botocore.exceptions import ClientError, WaiterError, ReadTimeoutError
 
 from amplify_aws_utils.jitter import Jitter
+
 # pylint: disable=redefined-builtin
 from .exceptions import (
     CatchAllExceptionError,
     TimeoutError,
     ExpectedTimeoutError,
-    S3WritingError
+    S3WritingError,
 )
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ def create_filters(filter_dict):
     """
     filters = []
     for key in filter_dict.keys():
-        filters.append({'Name': key, 'Values': filter_dict[key]})
+        filters.append({"Name": key, "Values": filter_dict[key]})
 
     return filters
 
@@ -43,8 +43,12 @@ def key_values_to_tags(dicts):
     Converts the list of key:value strings (example ["mykey:myValue", ...])
     into a list of AWS tag dicts (example: [{'Key': 'mykey', 'Value': 'myValue'}, ...]
     """
-    return [{'Key': tag_key_value[0], 'Value': tag_key_value[1]}
-            for tag_key_value in [key_value_option.split(":", 1) for key_value_option in dicts]]
+    return [
+        {"Key": tag_key_value[0], "Value": tag_key_value[1]}
+        for tag_key_value in [
+            key_value_option.split(":", 1) for key_value_option in dicts
+        ]
+    ]
 
 
 def find_or_create(find, create):
@@ -96,7 +100,7 @@ def throttled_call(fun, *args, **kwargs):
             if logging.getLogger().level == logging.DEBUG:
                 logger.exception("Failed to run %s.", fun)
 
-            error_code = err.response['Error'].get('Code', 'Unknown')
+            error_code = err.response["Error"].get("Code", "Unknown")
             is_throttle_exception = any(
                 key_word in error_code
                 for key_word in (
@@ -118,35 +122,14 @@ def throttled_call(fun, *args, **kwargs):
             time_passed = jitter.backoff()
 
 
-# pylint: disable=no-else-return
-def wait_for_state(resource, state, timeout=15 * 60, state_attr='state'):
-    """Wait for an AWS resource to reach a specified state"""
-    jitter = Jitter()
-    time_passed = 0
-
-    while True:
-        try:
-            resource.update()
-            current_state = getattr(resource, state_attr)
-            if current_state == state:
-                return
-            elif current_state in ('failed', 'terminated'):
-                raise ExpectedTimeoutError(
-                    f"{resource} entered state {current_state} after {time_passed}s waiting for state {state}"
-                )
-        except (EC2ResponseError, BotoServerError):
-            pass  # These are most likely transient, we will timeout if they are not
-
-        if time_passed >= timeout:
-            raise TimeoutError(
-                f"Timed out waiting for {resource} to change state to {state} after {time_passed}s."
-            )
-
-        time_passed = jitter.backoff()
-
-
-def wait_for_state_boto3(describe_func, params_dict, resources_name,
-                         expected_state, state_attr='state', timeout=15 * 60):
+def wait_for_state_boto3(
+    describe_func,
+    params_dict,
+    resources_name,
+    expected_state,
+    state_attr="state",
+    timeout=15 * 60,
+):
     """Wait for an AWS resource to reach a specified state using the boto3 library"""
     jitter = Jitter()
     time_passed = 0
@@ -159,7 +142,7 @@ def wait_for_state_boto3(describe_func, params_dict, resources_name,
             all_good = True
             failure = False
             for resource in resources:
-                if resource[state_attr] in ('failed', 'terminated'):
+                if resource[state_attr] in ("failed", "terminated"):
                     failure = True
                     all_good = False
                 elif resource[state_attr] != expected_state:
@@ -173,7 +156,7 @@ def wait_for_state_boto3(describe_func, params_dict, resources_name,
                     "entered either 'failed' or 'terminated' state "
                     f"after {time_passed}s waiting for state {expected_state}:\n{params_dict}"
                 )
-        except (EC2ResponseError, ClientError):
+        except ClientError:
             pass  # These are most likely transient, we will timeout if they are not
 
         if time_passed >= timeout:
@@ -185,41 +168,14 @@ def wait_for_state_boto3(describe_func, params_dict, resources_name,
         time_passed = jitter.backoff()
 
 
-def wait_for_sshable(remotecmd, instance, timeout=15 * 60, quiet=False):
-    """
-    Returns True when host is up and sshable
-    returns False on timeout
-    """
-    jitter = Jitter()
-    time_passed = 0
-
-    if not quiet:
-        logger.info("Waiting for instance %s to be fully provisioned.", instance.id)
-    wait_for_state(instance, 'running', timeout)
-    if not quiet:
-        logger.info("Instance %s running (booting up).", instance.id)
-
-    while True:
-        logger.debug("Waiting for %s to become sshable.", instance.id)
-        if remotecmd(instance, ['true'], nothrow=True)[0] == 0:
-            logger.info("Instance %s now SSHable.", instance.id)
-            logger.debug("Waited %s seconds for instance to boot", time_passed)
-            return
-        if time_passed >= timeout:
-            break
-        time_passed = jitter.backoff()
-
-    raise TimeoutError(f"Timed out waiting for instance {instance} to become sshable after {timeout}s.")
-
-
 # pylint: disable=keyword-arg-before-vararg
 def get_boto3_paged_results(
-        func: Callable,
-        results_key: str,
-        next_token_key: str = 'NextToken',
-        next_request_token_key: str = 'NextToken',
-        *args,
-        **kwargs
+    func: Callable,
+    results_key: str,
+    next_token_key: str = "NextToken",
+    next_request_token_key: str = "NextToken",
+    *args,
+    **kwargs,
 ) -> List:
     """
     Helper method for automatically making multiple boto3 requests for their listing functions
@@ -263,15 +219,11 @@ def get_ssm_parameters(names: Sequence[str]) -> Dict[str, str]:
     :param names: List of names of parameters to get.
     :return: A dictionary of the name of the parameter to its value.
     """
-    client = boto3.client('ssm')
+    client = boto3.client("ssm")
 
-    results = throttled_call(
-        client.get_parameters,
-        Names=names,
-        WithDecryption=True
-    )
+    results = throttled_call(client.get_parameters, Names=names, WithDecryption=True)
 
-    return {param['Name']: param['Value'] for param in results['Parameters']}
+    return {param["Name"]: param["Value"] for param in results["Parameters"]}
 
 
 def get_ssm_parameter(name: str) -> str:
@@ -280,25 +232,11 @@ def get_ssm_parameter(name: str) -> str:
     :param name: Name of the parameter to get.
     :return: SSM parameter value.
     """
-    client = boto3.client('ssm')
+    client = boto3.client("ssm")
 
-    results = throttled_call(
-        client.get_parameter,
-        Name=name,
-        WithDecryption=True
-    )
+    results = throttled_call(client.get_parameter, Name=name, WithDecryption=True)
 
-    return results["Parameter"]['Value']
-
-
-# DEPRACATED
-def tag2dict(tags):
-    """
-    tag2dict is deprecated, its replaced by boto3_tags_to_dict
-    :param tags:
-    :return:
-    """
-    boto3_tags_to_dict(tags)
+    return results["Parameter"]["Value"]
 
 
 def boto3_tags_to_dict(boto3_tags):
@@ -313,21 +251,18 @@ def boto3_tags_to_dict(boto3_tags):
     # boto3 is not consistent with the tag dict it returns
     # depending on the resource, the tag name will either be under a 'Key' or 'Name' key or even in lowercase
     # check all possibilities to figure out what key names are being used
-    possible_keys = ['Key', 'key', 'Name', 'name']
+    possible_keys = ["Key", "key", "Name", "name"]
     actual_keys = (key for key in boto3_tags[0].keys() if key in possible_keys)
     key_name = next(actual_keys, None)
 
-    possible_values = ['Value', 'value']
+    possible_values = ["Value", "value"]
     actual_values = (key for key in boto3_tags[0].keys() if key in possible_values)
     value_name = next(actual_values, None)
 
     if not key_name or not value_name:
-        raise RuntimeError('Unable to identify tag key names in dict')
+        raise RuntimeError("Unable to identify tag key names in dict")
 
-    return {
-        tag[key_name]: tag[value_name]
-        for tag in boto3_tags
-    }
+    return {tag[key_name]: tag[value_name] for tag in boto3_tags}
 
 
 def dict_to_boto3_tags(tag_dict):
@@ -336,10 +271,7 @@ def dict_to_boto3_tags(tag_dict):
     :param tag_dict: A dictionary of str to str.
     :return: A list of boto3 tags.
     """
-    return [
-        {"Key": key, "Value": value}
-        for key, value in tag_dict.items()
-    ]
+    return [{"Key": key, "Value": value} for key, value in tag_dict.items()]
 
 
 def chunker(sequence, size):
@@ -352,7 +284,10 @@ def chunker(sequence, size):
     # [10, 11, 12, 13, 14]
     # [15, 16, 17, 18, 19]
     """
-    return (sequence[position:position + size] for position in range(0, len(sequence), size))
+    return (
+        sequence[position : position + size]
+        for position in range(0, len(sequence), size)
+    )
 
 
 def dynamodb_record_to_dict(record: Dict[str, Dict[str, str]]) -> Dict[str, str]:
@@ -373,20 +308,17 @@ def dynamodb_record_to_dict(record: Dict[str, Dict[str, str]]) -> Dict[str, str]
         "baz": "100",
     }
     """
-    return {
-        key: list(value.values())[0]
-        for key, value in record.items()
-    }
+    return {key: list(value.values())[0] for key, value in record.items()}
 
 
 # pylint: disable=invalid-name
 @lambda_handler_decorator
 def catchall_exception_lambda_handler_decorator(
-        handler: Callable,
-        event: Dict[str, Any],
-        context: LambdaContext,
-        log_exception: Optional[bool] = True,
-        raise_exception: Optional[bool] = True
+    handler: Callable,
+    event: Dict[str, Any],
+    context: LambdaContext,
+    log_exception: Optional[bool] = True,
+    raise_exception: Optional[bool] = True,
 ) -> Union[Dict[str, Any], None]:
     """
     Decorator to handle uncaught exceptions for a lambda handler.

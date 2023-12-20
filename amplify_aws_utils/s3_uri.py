@@ -12,10 +12,7 @@ class S3URI:
         """
         # allow_fragments handles cases where s3 objects might have `#`s in their key
         # https://stackoverflow.com/questions/42641315/s3-urls-get-bucket-name-and-path
-        self._parsed: ParseResult = urlparse(
-            url=uri,
-            allow_fragments=False
-        )
+        self._parsed: ParseResult = urlparse(url=uri, allow_fragments=False)
 
     @property
     def bucket(self) -> str:

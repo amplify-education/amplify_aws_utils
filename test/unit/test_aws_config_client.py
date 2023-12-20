@@ -1,7 +1,6 @@
 """Class for testing the Config client wrapper"""
 from unittest import TestCase
-
-from mock import MagicMock, call
+from unittest.mock import MagicMock, call
 
 from amplify_aws_utils.clients.config import Config
 
@@ -31,20 +30,13 @@ class TestAwsConfigClient(TestCase):
         ]
 
         self.config.put_evaluations(
-            result_token=MOCK_RESULT_TOKEN,
-            evaluations=evaluations
+            result_token=MOCK_RESULT_TOKEN, evaluations=evaluations
         )
 
         self.boto_client.put_evaluations.assert_has_calls(
             calls=(
-                call(
-                    ResultToken=MOCK_RESULT_TOKEN,
-                    Evaluations=evaluations[:100]
-                ),
-                call(
-                    ResultToken=MOCK_RESULT_TOKEN,
-                    Evaluations=evaluations[100:]
-                ),
+                call(ResultToken=MOCK_RESULT_TOKEN, Evaluations=evaluations[:100]),
+                call(ResultToken=MOCK_RESULT_TOKEN, Evaluations=evaluations[100:]),
             ),
-            any_order=False
+            any_order=False,
         )

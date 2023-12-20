@@ -2,19 +2,17 @@
 from typing import Dict, Any, Optional
 
 import boto3
-import botostubs
+from mypy_boto3_sts import STSClient
 
 
 class STS:
     """Utilities for assuming AWS roles"""
-    def __init__(self, sts_client: botostubs.STS):
+
+    def __init__(self, sts_client: STSClient):
         self.sts_client = sts_client
 
     def assume_role(
-            self,
-            account_id: str,
-            role_name: str,
-            role_session_name: Optional[str] = None
+        self, account_id: str, role_name: str, role_session_name: Optional[str] = None
     ) -> Dict[str, str]:
         """
         Assumes a role and returns its credentials.
@@ -24,19 +22,19 @@ class STS:
         :return: A dictionary of the credentials.
         """
         assumed_role_object = self.sts_client.assume_role(
-            RoleArn=f'arn:aws:iam::{account_id}:role/{role_name}',
-            RoleSessionName=role_session_name or 'AssumedRole',
+            RoleArn=f"arn:aws:iam::{account_id}:role/{role_name}",
+            RoleSessionName=role_session_name or "AssumedRole",
         )
 
-        return assumed_role_object['Credentials']
+        return assumed_role_object["Credentials"]
 
     def get_boto3_client_for_account(
-            self,
-            account_id: str,
-            role_name: str,
-            client_name: str,
-            role_session_name: Optional[str] = None,
-            **kwargs
+        self,
+        account_id: str,
+        role_name: str,
+        client_name: str,
+        role_session_name: Optional[str] = None,
+        **kwargs,
     ) -> Any:
         """
         Convenience function for assuming a role into and then returning a boto3 client with that role.
@@ -54,8 +52,8 @@ class STS:
         )
         return boto3.client(
             client_name,
-            aws_access_key_id=credentials['AccessKeyId'],
-            aws_secret_access_key=credentials['SecretAccessKey'],
-            aws_session_token=credentials['SessionToken'],
-            **kwargs
+            aws_access_key_id=credentials["AccessKeyId"],
+            aws_secret_access_key=credentials["SecretAccessKey"],
+            aws_session_token=credentials["SessionToken"],
+            **kwargs,
         )
