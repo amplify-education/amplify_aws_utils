@@ -53,7 +53,9 @@ jobs:
       - name: Update GIT_HASH
         run: sed --expression "s|GIT_HASH|$GITHUB_SHA|g" --in-place **/version.py
       - name: Build tarball
-        run: python setup.py sdist
+        run: |
+          pip install setuptools
+          python setup.py sdist
       - name: Publish to Test PyPI
         uses: pypa/gh-action-pypi-publish@master
         with:
