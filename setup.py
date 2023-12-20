@@ -37,7 +37,7 @@ def get_version():
 
 
 def get_requirements():
-    """Reads the installation requirements from requirements.pip"""
+    """Reads the installation requirements from requirements.txt"""
     with open("requirements.txt") as reqfile:
         return [
             line
