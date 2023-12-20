@@ -48,7 +48,7 @@ This creates a package in `dist` directory.
 Running `tox` will automatically execute linters as well as the unit tests. You can also run them individually with
 the -e argument.
 
-For example, `tox -e lint,py38-unit` will run the linters, and then the unit tests in python 3.6
+For example, `tox -e lint,py38-unit` will run the linters, and then the unit tests in python 3.8
 
 To see all the available options, run `tox -l`.
 
