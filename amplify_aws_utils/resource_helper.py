@@ -8,10 +8,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 import boto3
 from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
 from aws_lambda_powertools.utilities.typing import LambdaContext
-from boto.exception import EC2ResponseError, BotoServerError
 from botocore.exceptions import ClientError, WaiterError, ReadTimeoutError
-
-from mypy_boto3_ssm.client import SSMClient
 
 from amplify_aws_utils.jitter import Jitter
 
@@ -125,33 +122,6 @@ def throttled_call(fun, *args, **kwargs):
             time_passed = jitter.backoff()
 
 
-# pylint: disable=no-else-return
-def wait_for_state(resource, state, timeout=15 * 60, state_attr="state"):
-    """Wait for an AWS resource to reach a specified state"""
-    jitter = Jitter()
-    time_passed = 0
-
-    while True:
-        try:
-            resource.update()
-            current_state = getattr(resource, state_attr)
-            if current_state == state:
-                return
-            elif current_state in ("failed", "terminated"):
-                raise ExpectedTimeoutError(
-                    f"{resource} entered state {current_state} after {time_passed}s waiting for state {state}"
-                )
-        except (EC2ResponseError, BotoServerError):
-            pass  # These are most likely transient, we will timeout if they are not
-
-        if time_passed >= timeout:
-            raise TimeoutError(
-                f"Timed out waiting for {resource} to change state to {state} after {time_passed}s."
-            )
-
-        time_passed = jitter.backoff()
-
-
 def wait_for_state_boto3(
     describe_func,
     params_dict,
@@ -180,13 +150,13 @@ def wait_for_state_boto3(
 
             if all_good:
                 return
-            elif failure:
+            if failure:
                 raise ExpectedTimeoutError(
                     "At least some resources who meet the following description "
                     "entered either 'failed' or 'terminated' state "
                     f"after {time_passed}s waiting for state {expected_state}:\n{params_dict}"
                 )
-        except (EC2ResponseError, ClientError):
+        except ClientError:
             pass  # These are most likely transient, we will timeout if they are not
 
         if time_passed >= timeout:
@@ -196,35 +166,6 @@ def wait_for_state_boto3(
             )
 
         time_passed = jitter.backoff()
-
-
-def wait_for_sshable(remotecmd, instance, timeout=15 * 60, quiet=False):
-    """
-    Returns True when host is up and sshable
-    returns False on timeout
-    """
-    jitter = Jitter()
-    time_passed = 0
-
-    if not quiet:
-        logger.info("Waiting for instance %s to be fully provisioned.", instance.id)
-    wait_for_state(instance, "running", timeout)
-    if not quiet:
-        logger.info("Instance %s running (booting up).", instance.id)
-
-    while True:
-        logger.debug("Waiting for %s to become sshable.", instance.id)
-        if remotecmd(instance, ["true"], nothrow=True)[0] == 0:
-            logger.info("Instance %s now SSHable.", instance.id)
-            logger.debug("Waited %s seconds for instance to boot", time_passed)
-            return
-        if time_passed >= timeout:
-            break
-        time_passed = jitter.backoff()
-
-    raise TimeoutError(
-        f"Timed out waiting for instance {instance} to become sshable after {timeout}s."
-    )
 
 
 # pylint: disable=keyword-arg-before-vararg
@@ -278,7 +219,7 @@ def get_ssm_parameters(names: Sequence[str]) -> Dict[str, str]:
     :param names: List of names of parameters to get.
     :return: A dictionary of the name of the parameter to its value.
     """
-    client: SSMClient = boto3.client("ssm")  # type: ignore
+    client = boto3.client("ssm")
 
     results = throttled_call(client.get_parameters, Names=names, WithDecryption=True)
 
@@ -291,21 +232,11 @@ def get_ssm_parameter(name: str) -> str:
     :param name: Name of the parameter to get.
     :return: SSM parameter value.
     """
-    client: SSMClient = boto3.client("ssm")  # type: ignore
+    client = boto3.client("ssm")
 
     results = throttled_call(client.get_parameter, Name=name, WithDecryption=True)
 
     return results["Parameter"]["Value"]
-
-
-# DEPRACATED
-def tag2dict(tags):
-    """
-    tag2dict is deprecated, its replaced by boto3_tags_to_dict
-    :param tags:
-    :return:
-    """
-    boto3_tags_to_dict(tags)
 
 
 def boto3_tags_to_dict(boto3_tags):
@@ -354,7 +285,7 @@ def chunker(sequence, size):
     # [15, 16, 17, 18, 19]
     """
     return (
-        sequence[position: position + size]
+        sequence[position : position + size]
         for position in range(0, len(sequence), size)
     )
 

@@ -1,7 +1,6 @@
 """Class for testing the Config client wrapper"""
 from unittest import TestCase
-
-from mock import MagicMock, call
+from unittest.mock import MagicMock, call
 
 from amplify_aws_utils.clients.config import Config
 

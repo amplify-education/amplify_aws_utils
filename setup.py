@@ -38,7 +38,7 @@ def get_version():
 
 def get_requirements():
     """Reads the installation requirements from requirements.pip"""
-    with open("requirements.pip") as reqfile:
+    with open("requirements.txt") as reqfile:
         return [
             line
             for line in reqfile.read().split("\n")
@@ -48,7 +48,7 @@ def get_requirements():
 
 setup(
     name="amplify_aws_utils",
-    python_requires=">=3.7.0",
+    python_requires=">=3.8.0",
     version=get_version(),
     description="Utility functions for working with AWS resources",
     long_description=get_long_description(),
@@ -57,13 +57,15 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10"
+        "Programming Language :: Python :: 3.11"
+        "Programming Language :: Python :: 3.12",
     ],
     keywords="",
     author="Amplify Education",
-    author_email="astronauts.core@amplify.com",
+    author_email="astrotools@amplify.com",
     url="https://github.com/amplify-education/amplify_aws_utils/",
     license="MIT",
     packages=find_packages(),

@@ -256,12 +256,12 @@ class S3:
         )
 
     def copy(
-            self,
-            source_bucket: str,
-            destination_bucket: str,
-            source_key: str,
-            destination_key: str,
-            **kwargs
+        self,
+        source_bucket: str,
+        destination_bucket: str,
+        source_key: str,
+        destination_key: str,
+        **kwargs
     ):
         """
         Convenience function for copying an S3 object from one bucket to another with multipart uplaod.

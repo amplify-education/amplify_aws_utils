@@ -1,8 +1,7 @@
 """Class for testing the EC2 client wrapper"""
 from datetime import datetime, timedelta
 from unittest import TestCase
-
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from amplify_aws_utils.clients.ec2 import EC2, DATETIME_FORMAT
 
