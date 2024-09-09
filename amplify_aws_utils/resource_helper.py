@@ -188,7 +188,7 @@ def get_boto3_paged_results(
     response = throttled_call(func, *args, **kwargs)
     response_items = response.get(results_key, [])
     if not response_items:
-        logger.warning("No items found in response=%s", response)
+        logger.debug("No items found in response=%s", response)
 
     next_token = response.get(next_token_key)
     prev_token = None
