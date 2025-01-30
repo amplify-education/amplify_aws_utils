@@ -108,6 +108,7 @@ def throttled_call(fun, *args, **kwargs):
                     "RequestLimitExceeded",
                     "TooManyRequestsException",
                     "ServiceUnavailable",
+                    "DatabaseResumingException",
                 )
             )
 
