@@ -1,9 +1,10 @@
 """Class for testing the EC2 client wrapper"""
+
 from datetime import datetime, timedelta
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from amplify_aws_utils.clients.ec2 import EC2, DATETIME_FORMAT
+from amplify_aws_utils.clients.ec2 import DATETIME_FORMAT, EC2
 
 MOCK_INITIAL_AMIS = {"ami-foo", "ami-bar"}
 MOCK_DERIVED_AMIS = {"ami-foo2", "ami-bar2"}
@@ -32,9 +33,7 @@ class TestAwsEc2Client(TestCase):
 
         actual_amis = self.ec2.find_amis()
 
-        self.boto_client.describe_images.assert_called_once_with(
-            Filters=[], Owners=["self"]
-        )
+        self.boto_client.describe_images.assert_called_once_with(Filters=[], Owners=["self"])
 
         self.assertEqual(MOCK_DERIVED_AMIS, actual_amis)
 
@@ -44,9 +43,7 @@ class TestAwsEc2Client(TestCase):
             "Images": [
                 {
                     "ImageId": image_id,
-                    "CreationDate": (datetime.now() + timedelta(days=1)).strftime(
-                        DATETIME_FORMAT
-                    ),
+                    "CreationDate": (datetime.now() + timedelta(days=1)).strftime(DATETIME_FORMAT),
                 }
                 for image_id in MOCK_DERIVED_AMIS
             ]
@@ -54,9 +51,7 @@ class TestAwsEc2Client(TestCase):
 
         actual_amis = self.ec2.find_amis(newer_than=datetime.now())
 
-        self.boto_client.describe_images.assert_called_once_with(
-            Filters=[], Owners=["self"]
-        )
+        self.boto_client.describe_images.assert_called_once_with(Filters=[], Owners=["self"])
 
         self.assertEqual(MOCK_DERIVED_AMIS, actual_amis)
 
@@ -79,12 +74,7 @@ class TestAwsEc2Client(TestCase):
         """Tests EC2 client can find instances"""
         self.boto_client.describe_instances.return_value = {
             "Reservations": [
-                {
-                    "Instances": [
-                        {"InstanceId": instance_id}
-                        for instance_id in MOCK_BAD_INSTANCES
-                    ]
-                }
+                {"Instances": [{"InstanceId": instance_id} for instance_id in MOCK_BAD_INSTANCES]}
             ]
         }
 
@@ -120,18 +110,14 @@ class TestAwsEc2Client(TestCase):
         self.assertEqual(
             [
                 {"InstanceId": instance_id, "ImageId": image_id}
-                for instance_id, image_id in zip(
-                    list(MOCK_GOOD_INSTANCES), list(MOCK_DERIVED_AMIS)
-                )
+                for instance_id, image_id in zip(list(MOCK_GOOD_INSTANCES), list(MOCK_DERIVED_AMIS))
             ],
             actual_instance_ids,
         )
 
     def test_find_instances_by_environment(self):
         """Tests EC2 client can find instances by environment"""
-        self.boto_client.describe_instances.return_value = {
-            "Reservations": [{"Instances": []}]
-        }
+        self.boto_client.describe_instances.return_value = {"Reservations": [{"Instances": []}]}
 
         self.ec2.find_instances(environment=MOCK_ENVIRONMENT)
 

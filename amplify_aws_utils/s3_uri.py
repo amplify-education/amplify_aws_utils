@@ -1,5 +1,6 @@
 """Module for representing S3 URIs"""
-from urllib.parse import urlparse, ParseResult
+
+from urllib.parse import ParseResult, urlparse
 
 
 class S3URI:

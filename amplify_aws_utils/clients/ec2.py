@@ -1,14 +1,15 @@
 """Class for wrapping common EC2 API calls"""
+
 import logging
-from typing import List, Dict, Any, Set
 from datetime import datetime
+from typing import Any, Dict, List, Set
 
 from mypy_boto3_ec2.client import EC2Client
 
 from amplify_aws_utils.resource_helper import (
+    create_filters,
     get_boto3_paged_results,
     throttled_call,
-    create_filters,
 )
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -57,9 +58,7 @@ class EC2:
         )
         return instances
 
-    def find_amis(
-        self, source_amis: Set[str] = None, newer_than: datetime = None
-    ) -> Set[str]:
+    def find_amis(self, source_amis: Set[str] = None, newer_than: datetime = None) -> Set[str]:
         """
         Function for finding AMIs that are children of a given set of AMIs.
         :param source_amis: A set of parent ami-ids to find children of.
@@ -79,8 +78,7 @@ class EC2:
         image_ids = {
             image["ImageId"]
             for image in images
-            if not newer_than
-            or datetime.strptime(image["CreationDate"], DATETIME_FORMAT) > newer_than
+            if not newer_than or datetime.strptime(image["CreationDate"], DATETIME_FORMAT) > newer_than
         }
         logger.info("Found additional images=%s", image_ids)
         return image_ids

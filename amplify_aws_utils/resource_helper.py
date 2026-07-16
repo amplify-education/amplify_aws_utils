@@ -1,6 +1,7 @@
 """
 This module has utility functions for working with aws resources
 """
+
 import logging
 import traceback
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
@@ -8,16 +9,16 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 import boto3
 from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
 from aws_lambda_powertools.utilities.typing import LambdaContext
-from botocore.exceptions import ClientError, WaiterError, ReadTimeoutError
+from botocore.exceptions import ClientError, ReadTimeoutError, WaiterError
 
 from amplify_aws_utils.jitter import Jitter
 
 # pylint: disable=redefined-builtin
 from .exceptions import (
     CatchAllExceptionError,
-    TimeoutError,
     ExpectedTimeoutError,
     S3WritingError,
+    TimeoutError,
 )
 
 logger = logging.getLogger(__name__)
@@ -45,9 +46,7 @@ def key_values_to_tags(dicts):
     """
     return [
         {"Key": tag_key_value[0], "Value": tag_key_value[1]}
-        for tag_key_value in [
-            key_value_option.split(":", 1) for key_value_option in dicts
-        ]
+        for tag_key_value in [key_value_option.split(":", 1) for key_value_option in dicts]
     ]
 
 
@@ -285,10 +284,7 @@ def chunker(sequence, size):
     # [10, 11, 12, 13, 14]
     # [15, 16, 17, 18, 19]
     """
-    return (
-        sequence[position : position + size]
-        for position in range(0, len(sequence), size)
-    )
+    return (sequence[position : position + size] for position in range(0, len(sequence), size))
 
 
 def dynamodb_record_to_dict(record: Dict[str, Dict[str, str]]) -> Dict[str, str]:

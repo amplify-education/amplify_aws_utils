@@ -1,11 +1,11 @@
-from __future__ import print_function
-
 """setup.py controls the build, testing, and distribution of the egg"""
 
-from setuptools import setup, find_packages
-import re
-import os.path
+from __future__ import print_function
 
+import os.path
+import re
+
+from setuptools import find_packages, setup
 
 VERSION_REGEX = re.compile(
     r"""
@@ -39,11 +39,7 @@ def get_version():
 def get_requirements():
     """Reads the installation requirements from requirements.txt"""
     with open("requirements.txt") as reqfile:
-        return [
-            line
-            for line in reqfile.read().split("\n")
-            if not line.startswith(("#", "-"))
-        ]
+        return [line for line in reqfile.read().split("\n") if not line.startswith(("#", "-"))]
 
 
 setup(
