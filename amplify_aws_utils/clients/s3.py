@@ -1,19 +1,19 @@
 """
 Manage interaction with S3 API
 """
+
 import hashlib
 import logging
-from typing import Dict, Any, Sequence, IO
+from typing import IO, Any, Dict, Sequence
 
 from botocore.exceptions import ClientError
-
 from mypy_boto3_s3.client import S3Client
 
 from amplify_aws_utils.resource_helper import (
+    boto3_tags_to_dict,
+    dict_to_boto3_tags,
     get_boto3_paged_results,
     throttled_call,
-    dict_to_boto3_tags,
-    boto3_tags_to_dict,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,9 +28,7 @@ class S3:
         # pylint: disable=invalid-name
         self.s3 = s3
 
-    def list_objects(
-        self, bucket: str, prefix: str, **kwargs
-    ) -> Sequence[Dict[str, Any]]:
+    def list_objects(self, bucket: str, prefix: str, **kwargs) -> Sequence[Dict[str, Any]]:
         """
         Convenience function for listing objects in an S3 bucket with paging handled.
         :param bucket: Name of the bucket.
@@ -39,18 +37,12 @@ class S3:
         :return: A list of all of the objects.
         """
         results = get_boto3_paged_results(
-            self.s3.list_objects_v2,
-            results_key="Contents",
-            Bucket=bucket,
-            Prefix=prefix,
-            **kwargs
+            self.s3.list_objects_v2, results_key="Contents", Bucket=bucket, Prefix=prefix, **kwargs
         )
 
         return results
 
-    def list_versions(
-        self, bucket: str, prefix: str, **kwargs
-    ) -> Sequence[Dict[str, Any]]:
+    def list_versions(self, bucket: str, prefix: str, **kwargs) -> Sequence[Dict[str, Any]]:
         """
         Convenience function for listing all the versions in an S3 bucket with paging handled.
         :param bucket: Name of the bucket.
@@ -65,7 +57,7 @@ class S3:
             next_request_token_key="VersionIdMarker",
             Bucket=bucket,
             Prefix=prefix,
-            **kwargs
+            **kwargs,
         )
 
         return results
@@ -97,9 +89,7 @@ class S3:
 
         return result
 
-    def download_file(
-        self, bucket: str, key: str, file_obj: IO, wait: bool = False, **kwargs
-    ):
+    def download_file(self, bucket: str, key: str, file_obj: IO, wait: bool = False, **kwargs):
         """
         Convenience function for downloading an object out of S3.
         :param bucket: Name of the bucket.
@@ -191,7 +181,7 @@ class S3:
             Bucket=bucket,
             Key=key,
             Tagging={"TagSet": dict_to_boto3_tags(tags)},
-            **kwargs
+            **kwargs,
         )
 
     def get_object_tags(self, bucket: str, key: str, **kwargs):
@@ -202,9 +192,7 @@ class S3:
         :param kwargs: Any additional arguments to pass to the underlying boto call.
         :return: A dictionary representing the tags on the object.
         """
-        boto_tags = throttled_call(
-            self.s3.get_object_tagging, Bucket=bucket, Key=key, **kwargs
-        )
+        boto_tags = throttled_call(self.s3.get_object_tagging, Bucket=bucket, Key=key, **kwargs)
         return boto3_tags_to_dict(boto_tags["TagSet"])
 
     def hash_file(self, bucket: str, key: str, **kwargs) -> str:
@@ -215,9 +203,7 @@ class S3:
         :param kwargs: Any additional arguments to pass to the underlying boto call.
         :return: SHA256 hash of the object.
         """
-        stream = throttled_call(self.s3.get_object, Bucket=bucket, Key=key, **kwargs)[
-            "Body"
-        ]
+        stream = throttled_call(self.s3.get_object, Bucket=bucket, Key=key, **kwargs)["Body"]
 
         # 5 megabytes
         block_size = 5242880
@@ -232,12 +218,7 @@ class S3:
         return hasher.hexdigest()
 
     def copy_file(
-        self,
-        source_bucket: str,
-        destination_bucket: str,
-        source_key: str,
-        destination_key: str,
-        **kwargs
+        self, source_bucket: str, destination_bucket: str, source_key: str, destination_key: str, **kwargs
     ):
         """
         Convenience function for copying an S3 object from one bucket to another.
@@ -252,16 +233,11 @@ class S3:
             Bucket=destination_bucket,
             Key=destination_key,
             CopySource={"Bucket": source_bucket, "Key": source_key},
-            **kwargs
+            **kwargs,
         )
 
     def copy(
-        self,
-        source_bucket: str,
-        destination_bucket: str,
-        source_key: str,
-        destination_key: str,
-        **kwargs
+        self, source_bucket: str, destination_bucket: str, source_key: str, destination_key: str, **kwargs
     ):
         """
         Convenience function for copying an S3 object from one bucket to another with multipart uplaod.
@@ -276,5 +252,5 @@ class S3:
             Bucket=destination_bucket,
             Key=destination_key,
             CopySource={"Bucket": source_bucket, "Key": source_key},
-            **kwargs
+            **kwargs,
         )

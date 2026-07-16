@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import requests_mock
 
 # pylint: disable=redefined-builtin
-from requests.exceptions import ReadTimeout, ConnectTimeout, ConnectionError
+from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
 
 from amplify_aws_utils.clients.spotinst import (
     SpotinstClient,
@@ -98,9 +98,7 @@ class TestSpotinstClient(TestCase):
             },
         )
 
-        self.spotinst_client.roll_group(
-            "sig-5af12785", 100, 100, health_check_type="EC2"
-        )
+        self.spotinst_client.roll_group("sig-5af12785", 100, 100, health_check_type="EC2")
 
         self.assertEqual(len(requests.request_history), 1)
 
@@ -182,9 +180,7 @@ class TestSpotinstClient(TestCase):
         """Test handling spotinst throttling"""
         requests.get("https://api.spotinst.io/aws/ec2/group", status_code=429)
 
-        self.assertRaises(
-            SpotinstRateExceededException, self.spotinst_client.get_groups
-        )
+        self.assertRaises(SpotinstRateExceededException, self.spotinst_client.get_groups)
 
     # pylint: disable=unused-argument
     @requests_mock.mock()
@@ -193,9 +189,7 @@ class TestSpotinstClient(TestCase):
         """Test handling a request timeout"""
         requests.get("https://api.spotinst.io/aws/ec2/group", exc=ReadTimeout)
 
-        self.assertRaises(
-            SpotinstRateExceededException, self.spotinst_client.get_groups
-        )
+        self.assertRaises(SpotinstRateExceededException, self.spotinst_client.get_groups)
 
     # pylint: disable=unused-argument
     @requests_mock.mock()

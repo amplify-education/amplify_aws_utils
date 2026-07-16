@@ -1,4 +1,5 @@
 """Test STS helper"""
+
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
@@ -39,9 +40,7 @@ class TestSTSHelper(TestCase):
             }
         }
         with patch("amplify_aws_utils.clients.sts.boto3.client") as boto3_mock:
-            self.sts_helper.get_boto3_client_for_account(
-                "1234", "fake-role", "s3", region_name="us-moon-1"
-            )
+            self.sts_helper.get_boto3_client_for_account("1234", "fake-role", "s3", region_name="us-moon-1")
 
             self.sts_client.assume_role.assert_called_once_with(
                 RoleArn="arn:aws:iam::1234:role/fake-role",

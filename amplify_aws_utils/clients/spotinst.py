@@ -1,11 +1,12 @@
 """Contains SpotinstClient class for talking to the Spotinst REST API"""
+
 import logging
-from typing import Dict, Any, List, Callable, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import requests
 
 # pylint: disable=redefined-builtin
-from requests.exceptions import Timeout, ConnectionError
+from requests.exceptions import ConnectionError, Timeout
 
 from amplify_aws_utils.jitter import Jitter
 
@@ -27,9 +28,7 @@ class SpotinstClient:
         :return: Elastigroup
         :rtype: dict
         """
-        response = self._make_throttled_request(
-            path="aws/ec2/group", data=group_config, method="post"
-        )
+        response = self._make_throttled_request(path="aws/ec2/group", data=group_config, method="post")
         return response["response"]["items"][0]
 
     def update_group(self, group_id: str, group_config: Dict[str, Any]):
@@ -38,9 +37,7 @@ class SpotinstClient:
         :param str group_id: Id of group to update
         :param dict group_config: New group config
         """
-        self._make_throttled_request(
-            path=f"aws/ec2/group/{group_id}", data=group_config, method="put"
-        )
+        self._make_throttled_request(path=f"aws/ec2/group/{group_id}", data=group_config, method="put")
 
     def get_group(self, group_id: str) -> Dict[str, Any]:
         """
@@ -49,9 +46,7 @@ class SpotinstClient:
         :return: List of instances in a Elastigroup
         :rtype: list[dict]
         """
-        response = self._make_throttled_request(
-            path=f"aws/ec2/group/{group_id}", method="get"
-        )
+        response = self._make_throttled_request(path=f"aws/ec2/group/{group_id}", method="get")
         return response["response"]["items"][0]
 
     def get_instances_in_group(self, group_id: str):
@@ -61,9 +56,7 @@ class SpotinstClient:
         :return: List of instances in a Elastigroup
         :rtype: list[dict]
         """
-        response = self._make_throttled_request(
-            path=f"aws/ec2/group/{group_id}" + "/status", method="get"
-        )
+        response = self._make_throttled_request(path=f"aws/ec2/group/{group_id}" + "/status", method="get")
         return response["response"]["items"]
 
     def get_groups(self) -> List[Dict[str, Any]]:
@@ -72,9 +65,7 @@ class SpotinstClient:
         :return: Lst of Elastigroups
         :rtype: list[dict]
         """
-        return self._make_throttled_request(path="aws/ec2/group", method="get")[
-            "response"
-        ]["items"]
+        return self._make_throttled_request(path="aws/ec2/group", method="get")["response"]["items"]
 
     def delete_group(self, group_id: str):
         """
@@ -104,9 +95,7 @@ class SpotinstClient:
             "healthCheckType": health_check_type,
             "strategy": {"action": "REPLACE_SERVER"},
         }
-        self._make_throttled_request(
-            path=f"aws/ec2/group/{group_id}/roll", data=request, method="put"
-        )
+        self._make_throttled_request(path=f"aws/ec2/group/{group_id}/roll", data=request, method="put")
 
     def get_deployments(self, group_id: str) -> List[Dict[str, Any]]:
         """
@@ -114,9 +103,7 @@ class SpotinstClient:
         :param str group_id:
         :return list[dict]:
         """
-        response = self._make_throttled_request(
-            path=f"aws/ec2/group/{group_id}/roll", method="get"
-        )
+        response = self._make_throttled_request(path=f"aws/ec2/group/{group_id}/roll", method="get")
         deploys = response["response"]["items"]
         return sorted(deploys, key=lambda deploy: deploy["createdAt"])
 
@@ -150,9 +137,7 @@ class SpotinstClient:
         params: Dict[str, str] = None,
         data: Dict[str, Any] = None,
     ) -> Dict[str, Any]:
-        return self._throttle_spotinst_call(
-            self._make_request, method, path, params, data
-        )
+        return self._throttle_spotinst_call(self._make_request, method, path, params, data)
 
     def _make_request(
         self,
@@ -195,16 +180,12 @@ class SpotinstClient:
             raise SpotinstApiException("Provided Spotinst API token is not valid")
 
         if response.status_code == 429:
-            raise SpotinstRateExceededException(
-                f"Rate exceeded while calling {method} {path}"
-            )
+            raise SpotinstRateExceededException(f"Rate exceeded while calling {method} {path}")
 
         try:
             ret = response.json()
         except ValueError as err:
-            raise SpotinstApiException(
-                f"Spotinst API did not return JSON response: {response.text}"
-            ) from err
+            raise SpotinstApiException(f"Spotinst API did not return JSON response: {response.text}") from err
 
         if response.status_code != 200:
             status = ret["response"]["status"]
@@ -213,9 +194,7 @@ class SpotinstClient:
 
             for error in errors:
                 if error.get("code") in ("Throttling", "RequestLimitExceeded"):
-                    raise SpotinstRateExceededException(
-                        f"Rate exceeded while calling {method} {path}"
-                    )
+                    raise SpotinstRateExceededException(f"Rate exceeded while calling {method} {path}")
 
             raise SpotinstApiException(
                 f"Unknown Spotinst API error encountered: {status} {errors}. RequestId {req_id}"
@@ -225,9 +204,7 @@ class SpotinstClient:
 
     def _throttle_spotinst_call(self, fun: Callable, *args, **kwargs):
         max_time = 5 * 60
-        jitter = Jitter(
-            min_wait=60
-        )  # wait at least 60 seconds because our rate limit resets then
+        jitter = Jitter(min_wait=60)  # wait at least 60 seconds because our rate limit resets then
         time_passed = 0
 
         while True:
@@ -250,9 +227,7 @@ def get_tag_for_spotinst_group(group: Dict[str, Any], key: str) -> Optional[str]
     :param key: Tag key
     :return:
     """
-    return spotinst_tags_to_dict(
-        group["compute"]["launchSpecification"].get("tags", {})
-    ).get(key)
+    return spotinst_tags_to_dict(group["compute"]["launchSpecification"].get("tags", {})).get(key)
 
 
 def spotinst_tags_to_dict(tags: List[Dict[str, str]]) -> Dict[str, str]:

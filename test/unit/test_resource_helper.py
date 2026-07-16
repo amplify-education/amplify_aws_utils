@@ -1,8 +1,9 @@
 """
 Tests for resource Helper
 """
+
 from unittest import TestCase
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from botocore.exceptions import ClientError, WaiterError
 
@@ -18,8 +19,8 @@ from amplify_aws_utils.resource_helper import (
     dynamodb_record_to_dict,
     keep_trying,
     throttled_call,
-    wait_for_state_boto3,
     to_bool,
+    wait_for_state_boto3,
 )
 
 
@@ -104,9 +105,7 @@ class ResourceHelperTests(TestCase):
     @patch("time.sleep", return_value=None)
     def test_wait_for_state_boto3_noerr(self, mock_sleep):
         """Test wait_for_state_boto3 with no error"""
-        mock_describe_func = MagicMock(
-            return_value={"myresource": {"status": "available"}}
-        )
+        mock_describe_func = MagicMock(return_value={"myresource": {"status": "available"}})
         wait_for_state_boto3(
             mock_describe_func,
             {"param1": "p1"},
@@ -120,9 +119,7 @@ class ResourceHelperTests(TestCase):
     @patch("time.sleep", return_value=None)
     def test_wait_for_state_boto3_timeout(self, mock_sleep):
         """Test wait_for_state_boto3 with timeout"""
-        mock_describe_func = MagicMock(
-            return_value={"myresource": {"status": "mystatus"}}
-        )
+        mock_describe_func = MagicMock(return_value={"myresource": {"status": "mystatus"}})
         self.assertRaises(
             TimeoutError,
             wait_for_state_boto3,
@@ -137,9 +134,7 @@ class ResourceHelperTests(TestCase):
     @patch("time.sleep", return_value=None)
     def test_wait_for_state_boto3_exp_timeout(self, mock_sleep):
         """Test wait_for_state_boto3 with ExpectedTimeout"""
-        mock_describe_func = MagicMock(
-            return_value={"myresource": {"status": "failed"}}
-        )
+        mock_describe_func = MagicMock(return_value={"myresource": {"status": "failed"}})
         self.assertRaises(
             ExpectedTimeoutError,
             wait_for_state_boto3,
@@ -152,9 +147,7 @@ class ResourceHelperTests(TestCase):
         )
         self.assertEqual(1, mock_describe_func.call_count)
 
-        mock_describe_func = MagicMock(
-            return_value={"myresource": {"status": "terminated"}}
-        )
+        mock_describe_func = MagicMock(return_value={"myresource": {"status": "terminated"}})
         self.assertRaises(
             ExpectedTimeoutError,
             wait_for_state_boto3,
@@ -283,16 +276,12 @@ class CatchallExceptionLambdaHandlerDecoratorTests(TestCase):
 
     @patch("aws_lambda_powertools.middleware_factory.factory.logger")
     @patch("amplify_aws_utils.resource_helper.logger")
-    def test_no_raise_no_log_exception(
-        self, mock_logger, mock_aws_lambda_powertools_logger
-    ):
+    def test_no_raise_no_log_exception(self, mock_logger, mock_aws_lambda_powertools_logger):
         """
         Tests catchall_exception_lambda_handler_decorator, doesn't raise exception, doesn't log exception
         """
 
-        @catchall_exception_lambda_handler_decorator(
-            log_exception=False, raise_exception=False
-        )
+        @catchall_exception_lambda_handler_decorator(log_exception=False, raise_exception=False)
         def _lambda_handler(*_):
             raise MockError("some exception")
 
@@ -303,9 +292,7 @@ class CatchallExceptionLambdaHandlerDecoratorTests(TestCase):
 
     @patch("aws_lambda_powertools.middleware_factory.factory.logger")
     @patch("amplify_aws_utils.resource_helper.logger")
-    def test_exception_chaining_in_err_mssg(
-        self, mock_logger, mock_aws_lambda_powertools_logger
-    ):
+    def test_exception_chaining_in_err_mssg(self, mock_logger, mock_aws_lambda_powertools_logger):
         """
         Tests catchall_exception_lambda_handler_decorator correctly retains exception chaining
         in exception error message

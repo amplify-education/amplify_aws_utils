@@ -1,4 +1,5 @@
 """Module for testing S3 URI parser"""
+
 from unittest import TestCase
 
 from amplify_aws_utils.s3_uri import S3URI

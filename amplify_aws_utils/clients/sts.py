@@ -1,10 +1,11 @@
 """Utilities for assuming AWS roles"""
+
 from typing import Any, Optional
 
 import boto3
 from mypy_boto3_sts.client import STSClient
-from mypy_boto3_sts.type_defs import CredentialsTypeDef
 from mypy_boto3_sts.literals import ServiceName
+from mypy_boto3_sts.type_defs import CredentialsTypeDef
 
 
 class STS:
