@@ -15,13 +15,13 @@ VERSION_REGEX = re.compile(
     re.MULTILINE | re.VERBOSE,
 )
 
-VERSION_FILE = os.path.join("amplify_aws_utils", "version.py")
+THIS_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
+VERSION_FILE = os.path.join(THIS_DIRECTORY, "amplify_aws_utils", "version.py")
 
 
 def get_long_description():
     """Reads the long description from the README"""
-    this_directory = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(this_directory, "README.md"), encoding="utf-8") as file:
+    with open(os.path.join(THIS_DIRECTORY, "README.md"), encoding="utf-8") as file:
         return file.read()
 
 
@@ -38,7 +38,7 @@ def get_version():
 
 def get_requirements():
     """Reads the installation requirements from requirements.txt"""
-    with open("requirements.txt") as reqfile:
+    with open(os.path.join(THIS_DIRECTORY, "requirements.txt")) as reqfile:
         return [line for line in reqfile.read().split("\n") if not line.startswith(("#", "-"))]
 
 
@@ -59,6 +59,7 @@ setup(
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
     ],
     keywords="",
     author="Amplify Education",
