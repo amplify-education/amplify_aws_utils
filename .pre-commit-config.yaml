@@ -35,7 +35,7 @@ repos:
     rev: v1.17.0    # Use the sha / tag you want to point at
     hooks:
       - id: mypy
-        args: [--python-version=3.9]
+        args: [--python-version=3.11]
         # You can use additional_dependencies to install types- packages
         # https://github.com/pre-commit/mirrors-mypy
         additional_dependencies:
