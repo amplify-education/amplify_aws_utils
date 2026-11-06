@@ -26,6 +26,11 @@ logger = logging.getLogger(__name__)
 STATE_POLL_INTERVAL = 2  # seconds
 INSTANCE_SSHABLE_POLL_INTERVAL = 15  # seconds
 
+# botocore sets the error code to the bare HTTP status when a 503 has no parseable body,
+# so the "ServiceUnavailable" keyword never matches. 503 means the request was not processed,
+# making retries safe for non-idempotent calls; 500/502/504 may have been processed.
+BARE_503_ERROR_CODE = "503"
+
 
 def create_filters(filter_dict):
     """
@@ -100,15 +105,18 @@ def throttled_call(fun, *args, **kwargs):
                 logger.exception("Failed to run %s.", fun)
 
             error_code = err.response["Error"].get("Code", "Unknown")
-            is_throttle_exception = any(
-                key_word in error_code
-                for key_word in (
-                    "Throttling",
-                    "RequestLimitExceeded",
-                    "TooManyRequestsException",
-                    "ServiceUnavailable",
-                    "DatabaseResumingException",
+            is_throttle_exception = (
+                any(
+                    key_word in error_code
+                    for key_word in (
+                        "Throttling",
+                        "RequestLimitExceeded",
+                        "TooManyRequestsException",
+                        "ServiceUnavailable",
+                        "DatabaseResumingException",
+                    )
                 )
+                or error_code == BARE_503_ERROR_CODE
             )
 
             if not is_throttle_exception or time_passed > max_time:

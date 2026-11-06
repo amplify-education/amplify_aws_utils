@@ -93,6 +93,15 @@ class ResourceHelperTests(TestCase):
         self.assertRaises(WaiterError, throttled_call, mock_func)
 
     @patch("time.sleep", return_value=None)
+    def test_throttled_call_retries_bare_503(self, mock_sleep):
+        """botocore reports a bodyless 503 as Code "503", not ServiceUnavailable"""
+        mock_func = MagicMock()
+        client_error = ClientError({"Error": {"Code": "503", "Message": "Service Unavailable"}}, "RunTask")
+        mock_func.side_effect = [client_error, client_error, True]
+        throttled_call(mock_func)
+        self.assertEqual(3, mock_func.call_count)
+
+    @patch("time.sleep", return_value=None)
     def test_throttled_call_clienterror_error(self, mock_sleep):
         """Test throttle_call with error"""
         mock_func = MagicMock()
